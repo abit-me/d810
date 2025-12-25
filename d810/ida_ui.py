@@ -418,11 +418,14 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         i = 0
         for rule in self.state.current_ins_rules:
             cell_file_path = QtWidgets.QTableWidgetItem(rule.name)
-            cell_file_path.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            flags = QtCore.Qt.ItemFlag.ItemIsSelectable.value | QtCore.Qt.ItemFlag.ItemIsEnabled.value
+            item_flags = QtCore.Qt.ItemFlag(flags)
+            cell_file_path.setFlags(item_flags)
+            #cell_file_path.setFlags(QtCore.Qt.ItemFlag.ItemIsSelectable | QtCore.Qt.ItemFlag.ItemIsEnabled)
             cell_rule_description = QtWidgets.QTableWidgetItem(rule.description)
-            cell_rule_description.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            cell_rule_description.setFlags(item_flags)
             cell_rule_config = QtWidgets.QTableWidgetItem(json.dumps(rule.config))
-            cell_rule_config.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            cell_rule_config.setFlags(item_flags)
             self.cfg_ins_preview.setItem(i, 0, cell_file_path)
             self.cfg_ins_preview.setItem(i, 1, cell_rule_description)
             self.cfg_ins_preview.setItem(i, 2, cell_rule_config)
@@ -440,11 +443,13 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         i = 0
         for rule in self.state.current_blk_rules:
             cell_file_path = QtWidgets.QTableWidgetItem(rule.name)
-            cell_file_path.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            flags = QtCore.Qt.ItemFlag.ItemIsSelectable.value | QtCore.Qt.ItemFlag.ItemIsEnabled.value
+            item_flags = QtCore.Qt.ItemFlag(flags)
+            cell_file_path.setFlags(item_flags)
             cell_rule_description = QtWidgets.QTableWidgetItem(rule.description)
-            cell_rule_description.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            cell_rule_description.setFlags(item_flags)
             cell_rule_config = QtWidgets.QTableWidgetItem(json.dumps(rule.config))
-            cell_rule_config.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+            cell_rule_config.setFlags(item_flags)
             self.cfg_blk_preview.setItem(i, 0, cell_file_path)
             self.cfg_blk_preview.setItem(i, 1, cell_rule_description)
             self.cfg_blk_preview.setItem(i, 2, cell_rule_config)
