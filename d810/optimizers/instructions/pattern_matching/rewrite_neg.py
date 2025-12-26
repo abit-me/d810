@@ -59,7 +59,7 @@ class NegAdd_HackersDelightRule_2(PatternMatchingRule):
                                                   AstLeaf("x_2"))))
 
 
-class NegAdd_HackersDelightRule_1(PatternMatchingRule):
+class NegAdd_HackersDelightRule_3(PatternMatchingRule):
     PATTERN = AstNode(m_add,
                       AstNode(m_mul,
                               AstConstant('val_fe'),

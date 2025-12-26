@@ -427,6 +427,11 @@
       "config": {}
     },
     {
+      "name": "NegAdd_HackersDelightRule_3",
+      "is_activated": true,
+      "config": {}
+    },
+    {
       "name": "NegOr_HackersDelightRule_1",
       "is_activated": true,
       "config": {}
