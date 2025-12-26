@@ -91,7 +91,7 @@ class AstInfo(object):
 
 
 class AstNode(dict):
-    def __init__(self, opcode, left=None, right=None, dst=None):
+    def __init__(self, opcode: 'mcode_t', left=None, right=None, dst=None):
         super(dict, self).__init__()
         self.opcode = opcode
         self.left = left
@@ -99,7 +99,7 @@ class AstNode(dict):
         self.dst = dst
         self.dst_mop = None
 
-        self.opcodes = []
+        # self.opcodes = []
         self.mop = None
         self.is_candidate_ok = False
 
