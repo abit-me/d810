@@ -137,9 +137,7 @@ class JnzRule7(JumpOptimizationRule):
 
 class JnzRule8(JumpOptimizationRule):
     ORIGINAL_JUMP_OPCODES = [m_jnz, m_jz]
-    PATTERN = AstNode(m_or,
-                      AstLeaf("x_0"),
-                      AstConstant("c_1"))
+    LEFT_PATTERN = AstNode(m_or, AstLeaf("x_0"), AstConstant("c_1"))
     RIGHT_PATTERN = AstConstant("c_2")
     REPLACEMENT_OPCODE = m_goto
 
@@ -157,10 +155,10 @@ class JnzRule8(JumpOptimizationRule):
 
 class JbRule1(JumpOptimizationRule):
     ORIGINAL_JUMP_OPCODES = [m_jb]
-    PATTERN = AstNode(m_xdu,
-                      AstNode(m_and,
-                              AstLeaf("x_0"),
-                              AstConstant("1", 1)))
+    LEFT_PATTERN = AstNode(m_xdu,
+                           AstNode(m_and,
+                                   AstLeaf("x_0"),
+                                   AstConstant("1", 1)))
     RIGHT_PATTERN = AstConstant("2", 2)
     REPLACEMENT_OPCODE = m_goto
 
@@ -171,9 +169,9 @@ class JbRule1(JumpOptimizationRule):
 
 class JaeRule1(JumpOptimizationRule):
     ORIGINAL_JUMP_OPCODES = [m_jae]
-    PATTERN = AstNode(m_and,
-                      AstLeaf("x_0"),
-                      AstConstant("c_1"))
+    LEFT_PATTERN = AstNode(m_and,
+                           AstLeaf("x_0"),
+                           AstConstant("c_1"))
     RIGHT_PATTERN = AstConstant("c_2")
     REPLACEMENT_OPCODE = m_goto
 

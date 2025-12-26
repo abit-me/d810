@@ -58,7 +58,7 @@ class JumpOptimizationRule(InstructionOptimizationRule):
     def check_candidate(self, opcode, left_candidate: AstNode, right_candidate: AstNode):
         return False
 
-    def get_valid_candidates(self, instruction, left_ast: AstNode, right_ast: AstNode, stop_early=True):
+    def get_valid_candidates(self, instruction: minsn_t, left_ast: AstNode, right_ast: AstNode, stop_early=True):
         valid_candidates = []
         if left_ast is None or right_ast is None:
             return []
@@ -88,7 +88,7 @@ class JumpOptimizationRule(InstructionOptimizationRule):
         if self.jump_original_block_serial is None:
             self.jump_replacement_block_serial = self.jump_original_block_serial
         left_candidate, right_candidate = valid_candidates[0]
-        new_ins = self.get_replacement(instruction, left_candidate,  right_candidate)
+        new_ins = self.get_replacement(instruction, left_candidate, right_candidate)
         return new_ins
 
     def get_replacement(self, original_ins: minsn_t, left_candidate: AstNode, right_candidate: AstNode):
@@ -132,10 +132,13 @@ class JumpOptimizationRule(InstructionOptimizationRule):
 
     @property
     def description(self):
+        if self.LEFT_PATTERN is None or self.RIGHT_PATTERN is None:
+            return ""
+
         self.LEFT_PATTERN.reset_mops()
         self.RIGHT_PATTERN.reset_mops()
-        return "{0}: {1}, {2}".format(",".join([opcode_to_string(x) for x in self.JMP_OPCODES]),
-                                      self.LEFT_PATTERN, self.RIGHT_PATTERN)
+        orig_jmp_codes = ",".join([opcode_to_string(x) for x in self.ORIGINAL_JUMP_OPCODES])
+        return "{0}: {1}, {2}".format(orig_jmp_codes, self.LEFT_PATTERN, self.RIGHT_PATTERN)
 
 
 class JumpFixer(FlowOptimizationRule):
@@ -151,7 +154,6 @@ class JumpFixer(FlowOptimizationRule):
         super().configure(kwargs)
 
         self.rules.clear()
-
         if "enabled_rules" in self.config.keys():
             for rule in self.known_rules:
                 if rule.name in self.config["enabled_rules"]:
