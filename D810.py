@@ -15,7 +15,7 @@ class D810Plugin(idaapi.plugin_t):
     # variables required by IDA
     flags = 0  # normal plugin
     wanted_name = "D-810"
-    wanted_hotkey = "Ctrl-Shift-D"
+    wanted_hotkey = "Ctrl-Shift-Alt-Z"
     comment = "Interface to the D-810 plugin"
     help = ""
     initialized = False
