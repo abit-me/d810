@@ -22,7 +22,7 @@ class TigressIndirectDispatcherBlockInfo(GenericDispatcherBlockInfo):
 
 
 class TigressIndirectDispatcherInfo(GenericDispatcherInfo):
-    def explore(self, blk: mblock_t):
+    def explore(self, blk: mblock_t) -> bool:
         self.reset()
         if not self._is_candidate_for_dispatcher_entry_block(blk):
             return False
@@ -37,12 +37,12 @@ class TigressIndirectDispatcherInfo(GenericDispatcherInfo):
         self.comparison_values = []
         return True
 
-    def _get_comparison_info(self, blk: mblock_t):
+    def _get_comparison_info(self, blk: mblock_t) -> Tuple[mop_t, mop_t]:
         if (blk.tail is None) or (blk.tail.opcode != m_ijmp):
             return None, None
         return blk.tail.l
 
-    def _is_candidate_for_dispatcher_entry_block(self, blk: mblock_t):
+    def _is_candidate_for_dispatcher_entry_block(self, blk: mblock_t) -> bool:
         if (blk.tail is None) or (blk.tail.opcode != m_ijmp):
             return False
         return True

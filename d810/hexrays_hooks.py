@@ -236,7 +236,7 @@ class BlockOptimizerManager(optblock_t):
             main_logger.debug("BlockOptimizer called at maturity: {0}".format(maturity_to_string(mba.maturity)))
             self.current_maturity = mba.maturity
 
-    def optimize(self, blk: mblock_t):
+    def optimize(self, blk: mblock_t) -> int:
         for cfg_rule in self.cfg_rules:
             if self.check_if_rule_is_activated_for_address(cfg_rule, blk.mba.entry_ea):
                 nb_patch = cfg_rule.optimize(blk)

@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple, List
 from ida_hexrays import *
-
+from collections import Counter
 from d810.hexrays_helpers import extract_num_mop, append_mop_if_not_in_list
 from d810.optimizers.flow.flattening.generic import GenericDispatcherCollector, GenericDispatcherInfo, \
     GenericDispatcherBlockInfo, GenericDispatcherUnflatteningRule
@@ -83,15 +83,15 @@ class OllvmDispatcherInfo(GenericDispatcherInfo):
                     self.comparison_values.append(child_info.comparison_value)
                 self._explore_children(child_info)
 
-    def _get_external_fathers(self, block_info: OllvmDispatcherBlockInfo) -> List[mblock_t]:
+    def _get_external_fathers(self, block_info: OllvmDispatcherBlockInfo) -> List[int]:
         internal_serials = [blk_info.blk.serial for blk_info in self.dispatcher_internal_blocks]
-        external_fathers = []
+        external_fathers: List[int] = []
         for blk_father in block_info.blk.predset:
             if blk_father not in internal_serials:
                 external_fathers.append(blk_father)
         return external_fathers
 
-    def _get_dispatcher_blocks_with_external_father(self) -> List[mblock_t]:
+    def _get_dispatcher_blocks_with_external_father(self) -> List[OllvmDispatcherBlockInfo]:
         dispatcher_blocks_with_external_father = []
         for blk_info in self.dispatcher_internal_blocks:
             if blk_info.blk.serial != self.entry_block.blk.serial:
