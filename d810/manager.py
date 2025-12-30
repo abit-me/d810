@@ -144,18 +144,37 @@ class D810State(object):
         self.d810_config.save()
         os.remove(config.path)
 
+    @staticmethod
+    def dump(ins_rules: List):
+        for i, rule in enumerate(ins_rules, 0):
+            print(f"{i}. {rule.__class__.__name__}: {rule.description}")
+
+    @staticmethod
+    def dump(blk_rules: List):
+        for i, rule in enumerate(blk_rules, 0):
+            print(f"{i}. {rule.__class__.__name__}: {rule.description}")
+            if rule.name == "JumpFixer":
+                for jmp_rule in rule.known_rules:
+                    print(f"\tjump_fixer->{jmp_rule.__class__.__name__}: {jmp_rule.description}")
+
     def load_project(self, project_index: int):
         self.current_project_index = project_index
         self.current_project = self.projects[project_index]
         self.current_ins_rules = []
         self.current_blk_rules = []
 
-        for rule in self.known_ins_rules:
+        # print("指令级规则:")
+        # self.dump(self.known_ins_rules)
+        # print("\n块级规则:")
+        # self.dump(self.known_blk_rules)
+
+        for ins_rule in self.known_ins_rules:
             for rule_conf in self.current_project.ins_rules:
-                if rule.name == rule_conf.name:
-                    rule.configure(rule_conf.config)
-                    rule.set_log_dir(self.log_dir)
-                    self.current_ins_rules.append(rule)
+                if ins_rule.name == rule_conf.name:
+                    ins_rule.configure(rule_conf.config)
+                    ins_rule.set_log_dir(self.log_dir)
+                    self.current_ins_rules.append(ins_rule)
+
         logger.debug("Instruction rules configured")
         for blk_rule in self.known_blk_rules:
             for rule_conf in self.current_project.blk_rules:
@@ -163,16 +182,24 @@ class D810State(object):
                     blk_rule.configure(rule_conf.config)
                     blk_rule.set_log_dir(self.log_dir)
                     self.current_blk_rules.append(blk_rule)
+
+        # print("当前指令级规则:\n")
+        # self.dump(self.current_ins_rules)
+
+        # print("当前块级规则:\n")
+        # self.dump(self.current_blk_rules)
+
         logger.debug("Block rules configured")
         self.manager.configure(**self.current_project.additional_configuration)
         logger.debug("Project loaded.")
 
     def start_d810(self):
         print("D-810 ready to deobfuscate...")
+        z3_code = self.d810_config.get("generate_z3_code")
+        mi_code = self.d810_config.get("dump_intermediate_microcode")
         self.manager.configure_instruction_optimizer([rule for rule in self.current_ins_rules],
-                                                     generate_z3_code=self.d810_config.get("generate_z3_code"),
-                                                     dump_intermediate_microcode=self.d810_config.get(
-                                                         "dump_intermediate_microcode"),
+                                                     generate_z3_code=z3_code,
+                                                     dump_intermediate_microcode=mi_code,
                                                      **self.current_project.additional_configuration)
         self.manager.configure_block_optimizer([rule for rule in self.current_blk_rules],
                                                **self.current_project.additional_configuration)
