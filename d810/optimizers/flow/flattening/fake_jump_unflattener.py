@@ -13,7 +13,7 @@ unflat_logger = logging.getLogger('D810.unflat')
 FAKE_LOOP_OPCODES = [m_jz, m_jnz]
 
 
-class UnflattenerFakeJump(GenericUnflatteningRule):
+class FakeJumpUnflattener(GenericUnflatteningRule):
     DESCRIPTION = "Check if a jump is always taken for each father blocks and remove them"
     DEFAULT_UNFLATTENING_MATURITIES = [MMAT_CALLS, MMAT_GLBOPT1]
     DEFAULT_MAX_PASSES = None

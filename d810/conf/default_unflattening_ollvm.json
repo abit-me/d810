@@ -902,7 +902,7 @@
   ],
   "blk_rules": [
     {
-      "name": "Unflattener",
+      "name": "OllvmUnflattener",
       "is_activated": true,
       "config": {}
     },

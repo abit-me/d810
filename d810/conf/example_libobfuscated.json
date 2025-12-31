@@ -907,7 +907,7 @@
   ],
   "blk_rules": [
     {
-      "name": "Unflattener",
+      "name": "OllvmUnflattener",
       "is_activated": true,
       "config": {
         "whitelisted_functions": [
@@ -916,7 +916,7 @@
       }
     },
     {
-      "name": "UnflattenerSwitchCase",
+      "name": "TigressSwitchUnflattener",
       "is_activated": true,
       "config": {
         "whitelisted_functions": [
@@ -925,7 +925,7 @@
       }
     },
     {
-      "name": "UnflattenerTigressIndirect",
+      "name": "TigressIndirectUnflattener",
       "is_activated": true,
       "config": {
         "goto_table_info": {
