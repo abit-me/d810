@@ -13,7 +13,7 @@ from d810.z3_utils import log_z3_instructions
 
 from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
-    from d810.manager import D810Manager
+    from d810.optimizer_manager import OptimizerManager
     from d810.optimizers.instructions.handler import InstructionOptimizer, InstructionOptimizationRule
     from d810.optimizers.flow.handler import FlowOptimizationRule
 
@@ -70,7 +70,7 @@ class InstructionDefUseCollector(mop_visitor_t):
 
 
 class InstructionOptimizerManager(optinsn_t):
-    def __init__(self, manager: D810Manager):
+    def __init__(self, manager: OptimizerManager):
         optimizer_logger.debug("Initializing {0}...".format(self.__class__.__name__))
         super().__init__()
         self.manager = manager
@@ -201,7 +201,7 @@ class InstructionVisitorManager(minsn_visitor_t):
 
 
 class BlockOptimizerManager(optblock_t):
-    def __init__(self, manager: D810Manager):
+    def __init__(self, manager: OptimizerManager):
         optimizer_logger.debug("Initializing {0}...".format(self.__class__.__name__))
         super().__init__()
         self.manager = manager
