@@ -4,24 +4,26 @@ import json
 import logging
 import idaapi
 import ida_kernwin
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets
 
-from d810.conf import ProjectConfiguration, RuleConfiguration
+from d810.conf import ProjectConfiguration, RuleConfiguration, D810Configuration
+from d810.project_manager import get_project_manager
 
 logger = logging.getLogger('D810.ui')
 
 
 class PluginConfigurationFileForm_t(QtWidgets.QDialog):
-    def __init__(self, parent, state):
+    def __init__(self, parent):
         logger.debug("Initializing PluginConfigurationFileForm_t")
         super().__init__(parent)
-        self.state = state
         self.log_dir_changed = False
 
-        self.log_dir = self.state.d810_config.get("log_dir")
-        self.erase_logs_on_reload = self.state.d810_config.get("erase_logs_on_reload")
-        self.generate_z3_code = self.state.d810_config.get("generate_z3_code")
-        self.dump_intermediate_microcode = self.state.d810_config.get("dump_intermediate_microcode")
+        self.d810_config = D810Configuration()
+        self.log_dir = self.d810_config.get("log_dir")
+        self.project_manager = get_project_manager()
+        self.erase_logs_on_reload = self.d810_config.get("erase_logs_on_reload")
+        self.generate_z3_code = self.d810_config.get("generate_z3_code")
+        self.dump_intermediate_microcode = self.d810_config.get("dump_intermediate_microcode")
 
         self.resize(1000, 500)
         self.setWindowTitle("Plugin Configuration")
@@ -44,13 +46,13 @@ class PluginConfigurationFileForm_t(QtWidgets.QDialog):
         self.config_layout.addLayout(self.layout_log_dir)
 
         self.checkbox_generate_z3_code = QtWidgets.QCheckBox("Generate Z3 code for simplification performed", self)
-        self.checkbox_generate_z3_code.setChecked(self.state.d810_config.get("generate_z3_code"))
+        self.checkbox_generate_z3_code.setChecked(self.d810_config.get("generate_z3_code"))
         self.config_layout.addWidget(self.checkbox_generate_z3_code)
         self.checkbox_dump_intermediate_microcode = QtWidgets.QCheckBox("Dump functions microcode at each maturity", self)
-        self.checkbox_dump_intermediate_microcode.setChecked(self.state.d810_config.get("dump_intermediate_microcode"))
+        self.checkbox_dump_intermediate_microcode.setChecked(self.d810_config.get("dump_intermediate_microcode"))
         self.config_layout.addWidget(self.checkbox_dump_intermediate_microcode)
         self.checkbox_erase_logs_on_reload = QtWidgets.QCheckBox("Erase log directory content when plugin is reloaded", self)
-        self.checkbox_erase_logs_on_reload.setChecked(self.state.d810_config.get("erase_logs_on_reload"))
+        self.checkbox_erase_logs_on_reload.setChecked(self.d810_config.get("erase_logs_on_reload"))
         self.config_layout.addWidget(self.checkbox_erase_logs_on_reload)
 
         self.layout_button = QtWidgets.QHBoxLayout()
@@ -78,19 +80,18 @@ class PluginConfigurationFileForm_t(QtWidgets.QDialog):
 
     def save_config(self):
         if self.log_dir_changed:
-            self.state.d810_config.set("log_dir", self.log_dir)
-        self.state.d810_config.set("erase_logs_on_reload", self.checkbox_erase_logs_on_reload.isChecked())
-        self.state.d810_config.set("generate_z3_code", self.checkbox_generate_z3_code.isChecked())
-        self.state.d810_config.set("dump_intermediate_microcode", self.checkbox_dump_intermediate_microcode.isChecked())
-        self.state.d810_config.save()
+            self.d810_config.set("log_dir", self.log_dir)
+        self.d810_config.set("erase_logs_on_reload", self.checkbox_erase_logs_on_reload.isChecked())
+        self.d810_config.set("generate_z3_code", self.checkbox_generate_z3_code.isChecked())
+        self.d810_config.set("dump_intermediate_microcode", self.checkbox_dump_intermediate_microcode.isChecked())
+        self.d810_config.save()
         self.accept()
 
 
 class EditConfigurationFileForm_t(QtWidgets.QDialog):
-    def __init__(self, parent, state):
+    def __init__(self, parent):
         logger.debug("Initializing EditConfigurationFileForm_t")
         super().__init__(parent)
-        self.state = state
         self.resize(1000, 500)
         self.setWindowTitle("Rule Configuration Editor")
 
@@ -197,8 +198,8 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         logger.debug("Calling update_table_ins_rule_selection")
         if activated_ins_rule_config_list is None:
             activated_ins_rule_config_list = []
-        self.table_ins_rule_selection.setRowCount(len(self.state.known_ins_rules))
-        for i, rule in enumerate(self.state.known_ins_rules):
+        self.table_ins_rule_selection.setRowCount(len(get_project_manager().known_ins_rules))
+        for i, rule in enumerate(get_project_manager().known_ins_rules):
             rule_config = self._get_rule_config(rule.name, activated_ins_rule_config_list)
             item = QtWidgets.QTableWidgetItem()
             item.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -227,8 +228,8 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         logger.debug("Calling update_table_blk_rule_selection")
         if activated_blk_rule_config_list is None:
             activated_blk_rule_config_list = []
-        self.table_blk_rule_selection.setRowCount(len(self.state.known_blk_rules))
-        for i, rule in enumerate(self.state.known_blk_rules):
+        self.table_blk_rule_selection.setRowCount(len(get_project_manager().known_blk_rules))
+        for i, rule in enumerate(get_project_manager().known_blk_rules):
             rule_config = self._get_rule_config(rule.name, activated_blk_rule_config_list)
             item = QtWidgets.QTableWidgetItem()
             item.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -291,12 +292,12 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
 
 
 class D810ConfigForm_t(ida_kernwin.PluginForm):
-    def __init__(self, state):
+    def __init__(self):
         super().__init__()
-        self.state = state
         self.shown = False
         self.created = False
         self.parent = None
+        self.d810_config = D810Configuration()
 
     def OnClose(self, form):
         logger.debug("Calling OnClose")
@@ -395,10 +396,9 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         self.plugin_status.setText("<span style=\" font-size:8pt; font-weight:600; color:#ff0000;\" >Not Loaded</span>")
         description_split.addWidget(self.plugin_status)
         btn_split.addWidget(self.plugin_status)
-
-
+        
         self.update_cfg_select()
-        self.cfg_select.setCurrentIndex(self.state.current_project_index)
+        self.cfg_select.setCurrentIndex(get_project_manager().current_project_index)
         self.cfg_select.currentIndexChanged.connect(self._load_config)
 
     def update_cfg_preview(self):
@@ -409,14 +409,14 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
     def update_cfg_ins_preview(self):
         # return
         logger.debug("Calling update_cfg_ins_preview")
-        self.cfg_ins_preview.setRowCount(len(self.state.current_ins_rules))
+        self.cfg_ins_preview.setRowCount(len(get_project_manager().current_ins_rules))
         self.cfg_ins_preview.setColumnCount(3)
         self.cfg_ins_preview.setHorizontalHeaderLabels(("Name", "Description", "Configuration"))
         self.cfg_ins_preview.horizontalHeader().setStretchLastSection(True)
         self.cfg_ins_preview.setSortingEnabled(True)
         # self.cfg_ins_preview.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         i = 0
-        for rule in self.state.current_ins_rules:
+        for rule in get_project_manager().current_ins_rules:
             cell_file_path = QtWidgets.QTableWidgetItem(rule.name)
             flags = QtCore.Qt.ItemFlag.ItemIsSelectable.value | QtCore.Qt.ItemFlag.ItemIsEnabled.value
             item_flags = QtCore.Qt.ItemFlag(flags)
@@ -434,14 +434,14 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
 
     def update_cfg_blk_preview(self):
         logger.debug("Calling update_cfg_blk_preview")
-        self.cfg_blk_preview.setRowCount(len(self.state.current_blk_rules))
+        self.cfg_blk_preview.setRowCount(len(get_project_manager().current_blk_rules))
         self.cfg_blk_preview.setColumnCount(3)
         self.cfg_blk_preview.setHorizontalHeaderLabels(("Name", "Description", "Configuration"))
         self.cfg_blk_preview.horizontalHeader().setStretchLastSection(True)
         self.cfg_blk_preview.setSortingEnabled(True)
         # self.cfg_blk_preview.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
         i = 0
-        for rule in self.state.current_blk_rules:
+        for rule in get_project_manager().current_blk_rules:
             cell_file_path = QtWidgets.QTableWidgetItem(rule.name)
             flags = QtCore.Qt.ItemFlag.ItemIsSelectable.value | QtCore.Qt.ItemFlag.ItemIsEnabled.value
             item_flags = QtCore.Qt.ItemFlag(flags)
@@ -458,36 +458,36 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
 
     def update_cfg_select(self):
         logger.debug("Calling update_cfg_select")
-        tmp = self.state.current_project_index
+        tmp = get_project_manager().current_project_index
         self.cfg_select.clear()
-        self.cfg_select.addItems([proj.path for proj in self.state.projects])
+        self.cfg_select.addItems([proj.path for proj in get_project_manager().projects])
         self.cfg_select.setCurrentIndex(tmp)
 
     def _create_config(self):
         logger.debug("Calling _create_config")
-        self._internal_config_creation(None, None, None, self.state.d810_config.config_dir)
+        self._internal_config_creation(None, None, None, self.d810_config.config_dir)
 
     def _duplicate_config(self):
         logger.debug("Calling _duplicate_config")
-        cur_cfg = self.state.current_project
-        self._internal_config_creation(None, cur_cfg.ins_rules, cur_cfg.blk_rules, self.state.d810_config.config_dir)
+        cur_cfg = get_project_manager().current_project
+        self._internal_config_creation(None, cur_cfg.ins_rules, cur_cfg.blk_rules, self.d810_config.config_dir)
 
     def _edit_config(self):
         logger.debug("Calling _edit_config")
-        cur_cfg = self.state.current_project
+        cur_cfg = get_project_manager().current_project
         self._internal_config_creation(cur_cfg.description, cur_cfg.ins_rules, cur_cfg.blk_rules, cur_cfg.path, cur_cfg)
 
     def _internal_config_creation(self, description, start_ins_rules, start_blk_rules, path, old_conf=None):
         logger.debug("Calling _internal_config_creation")
-        editdlg = EditConfigurationFileForm_t(self.parent, self.state)
+        editdlg = EditConfigurationFileForm_t(self.parent)
         editdlg.update_form(description, start_ins_rules, start_blk_rules, path)
         if editdlg.exec_() == QtWidgets.QDialog.Accepted:
             new_config = ProjectConfiguration(editdlg.config_path, editdlg.config_description, editdlg.config_ins_rules, editdlg.config_blk_rules)
             new_config.save()
             if old_conf is None:
-                self.state.add_project(new_config)
+                get_project_manager().add_project(new_config)
             else:
-                self.state.update_project(old_conf, new_config)
+                get_project_manager().update_project(old_conf, new_config)
             self.update_cfg_select()
             return new_config
         return None
@@ -495,46 +495,43 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
     # callback when the "Delete" button is clicked
     def _delete_config(self):
         logger.debug("Calling _delete_config")
-        self.state.del_project(self.state.current_project)
+        get_project_manager().del_project(get_project_manager().current_project)
         self.update_cfg_select()
 
     # Called when the edit combo is changed
     def _load_config(self, index):
         logger.debug("Calling _load_config")
-        self.state.load_project(index)
-        self.cfg_description.setText(self.state.current_project.description)
+        get_project_manager().load_project(index)
+        self.cfg_description.setText(get_project_manager().current_project.description)
         self.update_cfg_preview()
         return
 
     def _configure_plugin(self):
-        editdlg = PluginConfigurationFileForm_t(self.parent, self.state)
+        editdlg = PluginConfigurationFileForm_t(self.parent)
         if editdlg.exec_() == QtWidgets.QDialog.Accepted:
             return
         return
 
     def _start_d810(self):
         logger.debug("Calling _start_d810")
-        self.state.start_d810()
         # self.plugin_status.clear()
         self.plugin_status.setText("<span style=\" font-size:8pt; font-weight:600; color:#00FF00;\" >Loaded</span>")
         return
 
     def _stop_d810(self):
         logger.debug("Calling _stop_d810")
-        self.state.stop_d810()
         # self.plugin_status.clear()
         self.plugin_status.setText("<span style=\" font-size:8pt; font-weight:600; color:#FF0000;\" >Not Loaded</span>")
         return
 
 
 class D810GUI(object):
-    def __init__(self, state):
+    def __init__(self):
         """
         Instanciate D-810 views
         """
         logger.debug("Initializing D810GUI")
-        self.state = state
-        self.d810_config_form = D810ConfigForm_t(self.state)
+        self.d810_config_form = D810ConfigForm_t()
         # XXX fix
         idaapi.set_dock_pos("D-810", "IDA View-A", idaapi.DP_TAB)
 

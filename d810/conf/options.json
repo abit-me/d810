@@ -2,7 +2,7 @@
   "erase_logs_on_reload": true,
   "generate_z3_code": true,
   "dump_intermediate_microcode": true,
-  "log_dir": null,
+  "log_dir": "/tmp",
   "configurations": [
     "default_instruction_only.json",
     "default_unflattening_ollvm.json",

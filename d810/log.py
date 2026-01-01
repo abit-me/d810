@@ -7,7 +7,7 @@ from pathlib import Path
 LOG_CONFIG_FILENAME = "log.ini"
 LOG_FILENAME = "d810.log"
 Z3_TEST_FILENAME = "z3_check_instructions_substitution.py"
-
+D810_LOG_DIR_NAME = "d810_logs"
 
 def clear_logs(log_dir):
     shutil.rmtree(log_dir, ignore_errors=True)

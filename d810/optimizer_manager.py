@@ -1,9 +1,4 @@
 from __future__ import annotations
-import os
-import json
-import logging
-import idaapi
-
 import logging
 
 logger = logging.getLogger('D810')

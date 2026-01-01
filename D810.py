@@ -4,9 +4,8 @@ import ida_hexrays
 import ida_kernwin
 
 
-from d810.conf import D810Configuration
-from d810.manager import D810State, D810_LOG_DIR_NAME
-from d810.log import configure_loggers, clear_logs
+from d810.state_manager import StateManager
+from d810.ida_ui import D810GUI
 
 
 D810_VERSION = "0.1"
@@ -22,30 +21,20 @@ class D810Plugin(idaapi.plugin_t):
 
     def __init__(self):
         super(D810Plugin, self).__init__()
-        self.d810_config = None
-        self.state = None
+        self.state_manager = None
+        self.gui = None
         self.initialized = False
 
+    def start_plugin(self):
+        self.state_manager.start()
+        self.gui = D810GUI()
+        self.gui.show_windows()
 
-    def reload_plugin(self):
-        if self.initialized:
-            self.term()
-
-        self.d810_config = D810Configuration()
-
-        #TO-DO: if [...].get raises an exception because log_dir is not found, handle exception
-        real_log_dir = os.path.join(self.d810_config.get("log_dir"), D810_LOG_DIR_NAME)
-
-        #TO-DO: if [...].get raises an exception because erase_logs_on_reload is not found, handle exception
-        if self.d810_config.get("erase_logs_on_reload"):
-            clear_logs(real_log_dir)
-
-        configure_loggers(real_log_dir)
-        self.state = D810State(self.d810_config)
-        print("D-810 reloading...")
-        self.state.start_plugin()
-        self.initialized = True
-
+    def stop_plugin(self):
+        self.state_manager.stop()
+        if self.gui:
+            self.gui.term()
+            self.gui = None
 
     # IDA API methods: init, run, term
     def init(self):
@@ -57,18 +46,20 @@ class D810Plugin(idaapi.plugin_t):
         if (int(kv[0]) < 7) or ((int(kv[0]) == 7) and (int(kv[1]) < 5)):
             print("D-810 need IDA version >= 7.5. Skipping")
             return idaapi.PLUGIN_SKIP
+
+        self.state_manager = StateManager()
         print("D-810 initialized (version {0})".format(D810_VERSION))
         return idaapi.PLUGIN_OK
 
 
     def run(self, args):
-        self.reload_plugin()
+        self.start_plugin()
 
 
     def term(self):
         print("Terminating D-810...")
-        if self.state is not None:
-            self.state.stop_plugin()
+        if self.state_manager is not None:
+            self.state_manager.stop()
 
         self.initialized = False
 

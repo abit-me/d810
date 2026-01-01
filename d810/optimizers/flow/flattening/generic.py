@@ -378,9 +378,6 @@ class GenericDispatcherUnflatteningRule(GenericUnflatteningRule):
                                                .format(dispatcher_entry_block.serial, dispatcher_father.serial,
                                                        father_histories_cst))
         for father_history_cst in father_histories_cst:
-            assert isinstance(father_history_cst, List)
-            for item in father_history_cst:
-                print(f"元素: {item}, 类型: {type(item)}")
             if None in father_history_cst:
                 raise NotDuplicableFatherException("Dispatcher {0} predecessor {1} has None value: {2}"
                                                    .format(dispatcher_entry_block.serial, dispatcher_father.serial,
