@@ -1,167 +1,252 @@
 #!/usr/bin/env python3
-import argparse
+"""
+IDA Pro Batch Analysis Tool
+============================
+
+A command-line tool for automated binary analysis using IDA Pro's idalib.
+
+Features:
+- Automatic analysis with auto-wait
+- Segment enumeration
+- Python script execution
+- Signature file application
+- Undo/redo support
+- JSON output for signature matches
+
+Usage:
+    python idacli.py -f binary.exe -l
+    python idacli.py -f binary.dll -s analysis.py
+    python idacli.py -f binary.so -g signatures.sig -o results.json
+
+Author: IDA Pro User
+Date: 2025-12-31
+"""
+
 import os
-import json
-import idapro
+import sys
 from pathlib import Path
+
+import idapro
 import ida_segment
 import ida_idaapi
 import ida_funcs
-import ida_idp
-import ida_auto
 import ida_undo
+import ida_hexrays
 
+from d850.argument import create_argument_parser, validate_arguments
+from d810.state_manager import StateManager
+from d850.decompile import decompile
+from d850.signature import apply_signature_file
 
+D850_VERSION = "0.1"
 
-class sig_hooks_t(ida_idp.IDB_Hooks):
+def list_segments() -> None:
+    """
+    List all segments in the loaded binary.
 
-    def __init__(self):
-        ida_idp.IDB_Hooks.__init__(self)
-        self.matched_funcs = set()
+    Prints detailed information about each segment including:
+    - Name, start/end addresses
+    - Segment class (code/data)
+    - Bitness and permissions
+    """
+    segment_count = ida_segment.get_segm_qty()
 
-    def func_added(self, pfn):
-        self.matched_funcs.add(pfn.start_ea)
-
-    def func_deleted(self, func_ea):
-        try:
-            self.matched_funcs.remove(func_ea)
-        except:
-            pass
-
-    def func_updated(self, pfn):
-        self.matched_funcs.add(pfn.start_ea)
-
-    def idasgn_loaded(self, sig_name):
-        return print(f"Sig {sig_name} loaded")
-
-    def dump_matches(self):
-        for fea in self.matched_funcs:
-            print(f"Matched function {ida_funcs.get_func_name(fea)}")
-
-
-### List the segments for the loaded binary
-def list_segments():
-    nb_items = ida_segment.get_segm_qty()
-    print("Segments number:",  nb_items)
-    for i in range(0, nb_items):
-        seg_src = ida_segment.getnseg(i)
-        print(str(i+1) + ".")
-        print("\tname:", ida_segment.get_segm_name(seg_src))
-        print("\tstart_address:", hex(seg_src.start_ea))
-        print("\tend_address", hex(seg_src.end_ea))
-        print("\tis_data_segment:", ida_segment.get_segm_class(seg_src) == ida_segment.SEG_DATA)
-        print("\tbitness:", seg_src.bitness)
-        print("\tpermissions:",  seg_src.perm, "\n")
-
-### Just call an existing python script
-def run_script(script_file_name:str):
-    if not os.path.isfile(script_file_name):
-        print(f"The specified script file {script_file_name} is not a valid python script")
-        return
-    ida_idaapi.IDAPython_ExecScript(script_file_name, globals())
-
-
-### Apply provided sig file name
-def apply_sig_file(database_file_name:str, sig_file_name:str, sig_res_file:str):
-    if not os.path.isfile(sig_file_name):
-        print(f"The specified value {sig_file_name} is not a valid file name")
+    if segment_count == 0:
+        print("No segments found")
         return
 
-    root, extension = os.path.splitext(sig_file_name)
-    if extension != ".sig":
-        print(f"The specified value {sig_file_name} is not a valid sig file")
-        return
+    print(f"\n{'='*70}")
+    print(f"Segments ({segment_count} total)")
+    print(f"{'='*70}\n")
 
-    # Install hook on IDB to collect matches
-    sig_hook = sig_hooks_t()
-    sig_hook.hook()
+    for i in range(segment_count):
+        seg = ida_segment.getnseg(i)
+        if not seg:
+            continue
 
-    # Start apply process and wait for it
-    ida_funcs.plan_to_apply_idasgn(sig_file_name)
-    ida_auto.auto_wait()
+        seg_name = ida_segment.get_segm_name(seg)
+        seg_class = ida_segment.get_segm_class(seg)
+        is_data = seg_class == ida_segment.SEG_DATA
+        is_code = seg_class == ida_segment.SEG_CODE
 
-    matches_no = 0
-    for index in range(0, ida_funcs.get_idasgn_qty()):
-        fname, _, fmatches = ida_funcs.get_idasgn_desc_with_matches(index)
-        if fname in sig_file_name:
-            matches_no = fmatches
-            break
-
-    matches = {
-        "total_matches": matches_no,
-        "matched_functions": []
-    }
-
-    for fea in sig_hook.matched_funcs:
-        matches['matched_functions'].append({ "func_name": ida_funcs.get_func_name(fea), "start_ea": hex(fea) })
+        print(f"[{i + 1}] {seg_name}")
+        print(f"    Address:     {hex(seg.start_ea)} - {hex(seg.end_ea)}")
+        print(f"    Size:        {seg.end_ea - seg.start_ea:,} bytes")
+        print(f"    Type:        {'Data' if is_data else 'Code' if is_code else 'Other'}")
+        print(f"    Bitness:     {seg.bitness * 8}-bit")
+        print(f"    Permissions: {seg.perm:#x}")
+        print()
 
 
-    with open(sig_res_file, 'w') as jsonfile:
-        json.dump(matches, jsonfile, indent=2)
+def run_script(script_path: str) -> bool:
+    """
+    Execute a Python script in IDA's context.
 
-    print(f"Total matches {matches_no} while applying {sig_file_name} on {database_file_name}, saved results to {sig_res_file}")
+    Args:
+        script_path: Path to the Python script file
 
-### Internal string to bool converter used for command line arguments
-def str_to_bool(value:str):
-    if isinstance(value, bool):
-        return value
-    if value.lower() in {'false', 'f', '0', 'no', 'n'}:
+    Returns:
+        True if script executed successfully, False otherwise
+    """
+    script_file = Path(script_path)
+
+    if not script_file.is_file():
+        print(f"✗ Error: Script file not found: {script_path}")
         return False
-    elif value.lower() in {'true', 't', '1', 'yes', 'y'}:
+
+    if script_file.suffix != '.py':
+        print(f"✗ Error: Not a Python file: {script_path}")
+        return False
+
+    try:
+        print(f"✓ Executing script: {script_file.name}")
+        ida_idaapi.IDAPython_ExecScript(str(script_file), globals())
+        print(f"✓ Script completed successfully")
         return True
-    raise ValueError(f'{value} is not a valid boolean value')
+    except Exception as e:
+        print(f"✗ Script execution failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
 
-# Parse input arguments
-parser=argparse.ArgumentParser(description="IDA Python Library Demo")
-parser.add_argument("-f", "--file", help="File to be analyzed with IDA", type=str, required=True)
-parser.add_argument("-l", "--list-segments", help="List segmentes", type=str_to_bool, nargs='?', const=True, default=False)
-parser.add_argument("-s", "--script-file-name", help="Execute an existing python script file", type=str, required=False)
-parser.add_argument("-g", "--sig-file-name", help="Provide a signature file to be applied, requires also -o", type=str, required=False)
-parser.add_argument("-o", "--sig-res-file", help="Signature file applying result json file, works only together with -g", type=str, required=False)
-parser.add_argument("-p", "--persist-changes", help="Persist database changes", type=str_to_bool, nargs='?', const=True, default=True)
 
-args=parser.parse_args()
+# def cleanup():
+#     """清理所有 hooks"""
+#     global test_hook, state_manager
+#
+#     try:
+#         if 'test_hook' in globals() and test_hook:
+#             test_hook.unhook()
+#             print("✓ Test hook cleaned up")
+#     except:
+#         pass
+#
+#     try:
+#         if 'state_manager' in globals() and state_manager:
+#             state_manager.stop()  # StateManager 应该有 stop() 方法
+#             print("✓ State manager cleaned up")
+#     except:
+#         pass
 
-if (args.sig_file_name is not None and args.sig_res_file is None) or (args.sig_file_name is None and args.sig_res_file is not None):
-    print("error: '-g/--sig-file-name' and '-o/--sig-res-file' arguments must be specified together or none of them.\n")
-    parser.print_help()
-    exit(-1)
 
-# Run auto analysis on the input file
-print("当前工作目录:", os.getcwd())
-print(f"Opening database {args.file}...")
-assert os.path.exists(args.file), f"文件 '{args.file}' 不存在"
-idapro.open_database(args.file, True)
+########################################################################################################################
+    # ✅ 创建 StateManager
+    # state_manager = StateManager()
+    # state_manager.start()
+    # print("D-810 ready to deobfuscate...")
 
-# Create an undo point
-if ida_undo.create_undo_point(b"Initial state, auto analysis"):
-    print(f"Successfully created an undo point...")
-else:
-    print(f"Failed to created an undo point...")
+def start():
 
-# List segments if required so
-if args.list_segments:
-    print("Listing segments...")
-    list_segments()
+    result = ida_hexrays.init_hexrays_plugin()
+    # print(f"ida_hexrays.init_hexrays_plugin(): {result}")
+    # test_hook()
+    # state_manager = StateManager()
+    # state_manager.start()
+    # decompile_all_func()
 
-# Run a script if one provided
-if args.script_file_name is not None:
-    print(f"Running script {args.script_file_name}...")
-    run_script(script_file_name=args.script_file_name)
+    #test_hook.hook()
 
-# Apply signature file if one provided
-if args.sig_file_name is not None:
-    print(f"Applying sig file {args.sig_file_name}...")
-    apply_sig_file(database_file_name=args.file, sig_file_name=args.sig_file_name, sig_res_file=args.sig_res_file)
+    state_manager = StateManager()
+    state_manager.start()
 
-# Revert any changes if specified so
-if not args.persist_changes:
-    if ida_undo.perform_undo():
-        print(f"Successfully reverted database changes...")
-    else:
-        print(f"Failed to revert database changes...")
+    decompile(0xADCC, True)
+    ida_hexrays.term_hexrays_plugin()
 
-# Let the idb in a consistent state, explicitly terminate the database
-print("Closing database...")
-idapro.close_database()
-print("Done, thanks for using IDA!")
+########################################################################################################################
+
+def main() -> int:
+    """
+    Main entry point.
+
+    Returns:
+        Exit code (0 for success, non-zero for failure)
+    """
+    # Parse arguments
+    parser = create_argument_parser()
+    args = parser.parse_args()
+
+    # Validate arguments
+    error_msg = validate_arguments(args)
+    if error_msg:
+        print(f"✗ Error: {error_msg}\n", file=sys.stderr)
+        parser.print_help()
+        return 1
+
+    # Print configuration
+    print(f"\n{'='*70}")
+    print(f"IDA Pro Batch Analysis")
+    print(f"{'='*70}")
+    print(f"Working directory: {os.getcwd()}")
+    print(f"Binary file:       {args.file}")
+    if args.script:
+        print(f"Script:            {args.script}")
+    if args.signature:
+        print(f"Signature:         {args.signature}")
+        print(f"Output:            {args.output}")
+    print(f"Persist changes:   {args.persist}")
+    print(f"{'='*70}\n")
+
+    try:
+        # Open database
+        print(f"Opening database...")
+        idapro.open_database(args.file, True)
+        print(f"✓ Database opened")
+
+        # D810 start
+        start()
+
+        # Create undo point
+        if ida_undo.create_undo_point(b"Initial state"):
+            print(f"✓ Undo point created")
+        else:
+            print(f"⚠ Warning: Failed to create undo point")
+
+        # List segments
+        if args.list_segments:
+            list_segments()
+
+        # Run script
+        if args.script:
+            if not run_script(args.script):
+                print(f"⚠ Warning: Script execution failed")
+
+        # Apply signature
+        if args.signature:
+            if not apply_signature_file(args.file, args.signature, args.output):
+                print(f"⚠ Warning: Signature application failed")
+
+        # Revert changes if needed
+        if not args.persist:
+            print(f"\nReverting changes...")
+            if ida_undo.perform_undo():
+                print(f"✓ Changes reverted")
+            else:
+                print(f"✗ Failed to revert changes")
+
+        return 0
+
+    except KeyboardInterrupt:
+        print(f"\n✗ Interrupted by user")
+        return 130
+
+    except Exception as e:
+        print(f"\n✗ Fatal error: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        return 1
+
+    finally:
+        # Always close database
+        print(f"\nClosing database...")
+
+        try:
+            idapro.close_database(True)
+            print(f"✓ Database closed")
+        except Exception as e:
+            print(f"✗ Error closing database: {e}", file=sys.stderr)
+
+        print(f"\nDone. Thanks for using IDA Pro!\n")
+
+
+if __name__ == '__main__':
+    sys.exit(main())
