@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
-from commandline.str_util import str_to_bool
+from d850.str_util import str_to_bool
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
