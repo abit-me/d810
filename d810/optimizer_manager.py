@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger('D810')
 
-class D810Manager(object):
+class OptimizerManager(object):
     def __init__(self, log_dir):
         self.instruction_optimizer_rules = []
         self.instruction_optimizer_config = {}
