@@ -35,121 +35,26 @@ import ida_hexrays
 
 from d850.argument import create_argument_parser, validate_arguments
 from d810.state_manager import StateManager
-from d850.decompile import decompile
+from d850.decompile import decompile_func, decompile_all_func
+from d850.script import run_script
+from d850.segment import list_segments
 from d850.signature import apply_signature_file
 
 D850_VERSION = "0.1"
 
-def list_segments() -> None:
-    """
-    List all segments in the loaded binary.
-
-    Prints detailed information about each segment including:
-    - Name, start/end addresses
-    - Segment class (code/data)
-    - Bitness and permissions
-    """
-    segment_count = ida_segment.get_segm_qty()
-
-    if segment_count == 0:
-        print("No segments found")
-        return
-
-    print(f"\n{'='*70}")
-    print(f"Segments ({segment_count} total)")
-    print(f"{'='*70}\n")
-
-    for i in range(segment_count):
-        seg = ida_segment.getnseg(i)
-        if not seg:
-            continue
-
-        seg_name = ida_segment.get_segm_name(seg)
-        seg_class = ida_segment.get_segm_class(seg)
-        is_data = seg_class == ida_segment.SEG_DATA
-        is_code = seg_class == ida_segment.SEG_CODE
-
-        print(f"[{i + 1}] {seg_name}")
-        print(f"    Address:     {hex(seg.start_ea)} - {hex(seg.end_ea)}")
-        print(f"    Size:        {seg.end_ea - seg.start_ea:,} bytes")
-        print(f"    Type:        {'Data' if is_data else 'Code' if is_code else 'Other'}")
-        print(f"    Bitness:     {seg.bitness * 8}-bit")
-        print(f"    Permissions: {seg.perm:#x}")
-        print()
-
-
-def run_script(script_path: str) -> bool:
-    """
-    Execute a Python script in IDA's context.
-
-    Args:
-        script_path: Path to the Python script file
-
-    Returns:
-        True if script executed successfully, False otherwise
-    """
-    script_file = Path(script_path)
-
-    if not script_file.is_file():
-        print(f"✗ Error: Script file not found: {script_path}")
-        return False
-
-    if script_file.suffix != '.py':
-        print(f"✗ Error: Not a Python file: {script_path}")
-        return False
-
-    try:
-        print(f"✓ Executing script: {script_file.name}")
-        ida_idaapi.IDAPython_ExecScript(str(script_file), globals())
-        print(f"✓ Script completed successfully")
-        return True
-    except Exception as e:
-        print(f"✗ Script execution failed: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-
-# def cleanup():
-#     """清理所有 hooks"""
-#     global test_hook, state_manager
-#
-#     try:
-#         if 'test_hook' in globals() and test_hook:
-#             test_hook.unhook()
-#             print("✓ Test hook cleaned up")
-#     except:
-#         pass
-#
-#     try:
-#         if 'state_manager' in globals() and state_manager:
-#             state_manager.stop()  # StateManager 应该有 stop() 方法
-#             print("✓ State manager cleaned up")
-#     except:
-#         pass
-
 
 ########################################################################################################################
-    # ✅ 创建 StateManager
-    # state_manager = StateManager()
-    # state_manager.start()
-    # print("D-810 ready to deobfuscate...")
 
-def start():
+def start(addr: ida_idaapi.ea_t = 0, force_recompile: bool = True):
 
-    result = ida_hexrays.init_hexrays_plugin()
-    # print(f"ida_hexrays.init_hexrays_plugin(): {result}")
-    # test_hook()
-    # state_manager = StateManager()
-    # state_manager.start()
-    # decompile_all_func()
-
-    #test_hook.hook()
-
+    ida_hexrays.init_hexrays_plugin()
     state_manager = StateManager()
     state_manager.start()
+    if addr == 0:
+        decompile_all_func()
+    else:
+        decompile_func(addr, force_recompile)
 
-    decompile(0xADCC, True)
     ida_hexrays.term_hexrays_plugin()
 
 ########################################################################################################################
@@ -183,6 +88,9 @@ def main() -> int:
     if args.signature:
         print(f"Signature:         {args.signature}")
         print(f"Output:            {args.output}")
+    if args.target:
+        print(f"Function:          {args.target}")
+
     print(f"Persist changes:   {args.persist}")
     print(f"{'='*70}\n")
 
@@ -193,7 +101,8 @@ def main() -> int:
         print(f"✓ Database opened")
 
         # D810 start
-        start()
+        # start(0xADCC)
+        start(args.target, True)
 
         # Create undo point
         if ida_undo.create_undo_point(b"Initial state"):

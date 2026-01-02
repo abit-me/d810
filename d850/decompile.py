@@ -23,7 +23,7 @@ def decompile_all_func():
                 #     mba.optimize_local(0)
                 pass
 
-def decompile(func_ea: ida_idaapi.ea_t, force_recompile: bool = False):
+def decompile_func(func_ea: ida_idaapi.ea_t, force_recompile: bool = False):
     """反编译函数，可选强制重新反编译"""
     import ida_funcs
     import ida_hexrays

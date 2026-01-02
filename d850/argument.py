@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 from typing import Optional
 
-from d850.str_util import str_to_bool
+from d850.str_util import str_to_bool, str_to_int
 
 
 def create_argument_parser() -> argparse.ArgumentParser:
@@ -78,6 +78,16 @@ Examples:
         default=True,
         metavar='BOOL',
         help='Save database changes (default: true)'
+    )
+
+    parser.add_argument(
+        '-t', '--target',
+        type=str_to_int,
+        nargs='?',
+        const=True,
+        default=0,
+        metavar='INT',
+        help='Target func_address, in hexadecimal or decimal'
     )
 
     return parser

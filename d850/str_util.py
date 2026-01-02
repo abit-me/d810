@@ -22,3 +22,21 @@ def str_to_bool(value: str) -> bool:
         return True
 
     raise ValueError(f"'{value}' is not a valid boolean value")
+
+
+def str_to_int(s: str) -> int:
+    """
+    将字符串转换为整数，自动识别十六进制（0x前缀）和十进制
+
+    Args:
+        s: 输入字符串，如 "0xadcc", "44492"
+
+    Returns:
+        int: 转换后的整数
+
+    Raises:
+        ValueError: 如果字符串格式无效
+    """
+    # int() 的第二个参数为 0 时会自动检测进制
+    # 支持 0x, 0o, 0b 前缀
+    return int(s, 0)
