@@ -6,7 +6,7 @@ import idaapi
 import ida_kernwin
 from PyQt5 import QtCore, QtWidgets
 
-from d810.conf import ProjectConfiguration, RuleConfiguration, D810Configuration
+from d810.configuration import D810Configuration, RuleConfiguration, ProjectConfiguration
 from d810.project_manager import get_project_manager
 
 logger = logging.getLogger('D810.ui')
