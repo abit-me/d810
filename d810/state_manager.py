@@ -1,13 +1,13 @@
 import logging
 import os
-from typing import List
 
-from d810.conf import D810Configuration, ProjectConfiguration
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from d810.log import configure_loggers, clear_logs, D810_LOG_DIR_NAME
 
 if TYPE_CHECKING:
-    from d810.conf import D810Configuration, ProjectConfiguration
+    pass
+
+from d810.configuration import D810Configuration
 
 from d810.module_manager import reload_all_modules
 from d810.optimizer_manager import OptimizerManager
@@ -61,28 +61,6 @@ class StateManager(object):
         self.d810_config.set("last_project_index", self.project_manager.current_project_index)
         self.d810_config.save()
 
-    # def stop(self):
-    #     print("Stopping D-810...")
-    #     self.optimizer_manager.stop()
-
     def stop(self):
-        """停止 D810 并清理所有 hooks"""
         print("Stopping D-810...")
-
-        if self.optimizer_manager:
-            try:
-                # 这里需要检查 unhook() 是否真的成功
-                if hasattr(self.optimizer_manager, 'hx_decompiler_hook'):
-                    hook = self.optimizer_manager.hx_decompiler_hook
-                    if hook:
-                        print(f"  Unhooking: {hook}")
-                        hook.unhook()
-                        print("  ✓ Hexrays hook removed")
-
-                # 可能还有其他 hooks？
-                # ...
-
-            except Exception as e:
-                print(f"  ⚠ Error in stop(): {e}")
-                import traceback
-                traceback.print_exc()
+        self.optimizer_manager.stop()
