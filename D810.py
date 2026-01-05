@@ -5,9 +5,6 @@ import ida_kernwin
 
 
 from d810.state_manager import StateManager
-from d810.ida_ui import D810GUI
-
-
 D810_VERSION = "0.1"
 
 class D810Plugin(idaapi.plugin_t):
@@ -26,6 +23,7 @@ class D810Plugin(idaapi.plugin_t):
         self.initialized = False
 
     def start_plugin(self):
+        from d810.ida_ui import D810GUI
         self.state_manager.start()
         self.gui = D810GUI()
         self.gui.show_windows()
@@ -40,6 +38,9 @@ class D810Plugin(idaapi.plugin_t):
     def init(self):
         if not ida_hexrays.init_hexrays_plugin():
             print("D-810 need Hex-Rays decompiler. Skipping")
+            return idaapi.PLUGIN_SKIP
+        if not ida_kernwin.is_idaq():
+            print("D-810 need IDA UI. Skipping")
             return idaapi.PLUGIN_SKIP
 
         kv = ida_kernwin.get_kernel_version().split(".")
