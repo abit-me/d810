@@ -1,6 +1,7 @@
 from __future__ import annotations
 import logging
 
+from ida_gdl import qflow_chart_t
 from ida_hexrays import *
 
 from d810.optimizers.instructions import PatternOptimizer, ChainOptimizer, Z3Optimizer, EarlyOptimizer, \
@@ -70,10 +71,10 @@ class InstructionDefUseCollector(mop_visitor_t):
 
 
 class InstructionOptimizerManager(optinsn_t):
-    def __init__(self, manager: OptimizerManager):
+    def __init__(self, log_dir: str):
         optimizer_logger.debug("Initializing {0}...".format(self.__class__.__name__))
         super().__init__()
-        self.manager = manager
+        self.log_dir = log_dir
         self.instruction_visitor = InstructionVisitorManager(self)
         self._last_optimizer_tried = None
         self.current_maturity = None
@@ -83,28 +84,28 @@ class InstructionOptimizerManager(optinsn_t):
 
         self.instruction_optimizers = []
         self.optimizer_usage_info = {}
-        self.add_optimizer(PatternOptimizer(DEFAULT_OPTIMIZATION_PATTERN_MATURITIES, log_dir=self.manager.log_dir))
-        self.add_optimizer(ChainOptimizer(DEFAULT_OPTIMIZATION_CHAIN_MATURITIES, log_dir=self.manager.log_dir))
-        self.add_optimizer(Z3Optimizer(DEFAULT_OPTIMIZATION_Z3_MATURITIES, log_dir=self.manager.log_dir))
-        self.add_optimizer(EarlyOptimizer(DEFAULT_OPTIMIZATION_EARLY_MATURITIES, log_dir=self.manager.log_dir))
-        self.analyzer = InstructionAnalyzer(DEFAULT_ANALYZER_MATURITIES, log_dir=self.manager.log_dir)
+        self.add_optimizer(PatternOptimizer(DEFAULT_OPTIMIZATION_PATTERN_MATURITIES, log_dir=self.log_dir))
+        self.add_optimizer(ChainOptimizer(DEFAULT_OPTIMIZATION_CHAIN_MATURITIES, log_dir=self.log_dir))
+        self.add_optimizer(Z3Optimizer(DEFAULT_OPTIMIZATION_Z3_MATURITIES, log_dir=self.log_dir))
+        self.add_optimizer(EarlyOptimizer(DEFAULT_OPTIMIZATION_EARLY_MATURITIES, log_dir=self.log_dir))
+        self.analyzer = InstructionAnalyzer(DEFAULT_ANALYZER_MATURITIES, log_dir=self.log_dir)
 
     def func(self, blk: mblock_t, ins: minsn_t) -> bool:
         self.log_info_on_input(blk, ins)
         try:
-            optimization_performed = self.optimize(blk, ins)
+            modified = self.optimize(blk, ins)
 
-            if not optimization_performed:
-                optimization_performed = ins.for_all_insns(self.instruction_visitor)
+            if not modified:
+                modified = ins.for_all_insns(self.instruction_visitor)
 
-            if optimization_performed:
+            if modified:
                 ins.optimize_solo()
 
                 if blk is not None:
                     blk.mark_lists_dirty()
                     blk.mba.verify(True)
 
-            return optimization_performed
+            return modified
         except RuntimeError as e:
             optimizer_logger.error("RuntimeError while optimizing ins {0} with {1}: {2}"
                                    .format(format_minsn_t(ins), self._last_optimizer_tried, e))
@@ -143,7 +144,7 @@ class InstructionOptimizerManager(optinsn_t):
                 ins_optimizer.cur_maturity = self.current_maturity
 
             if self.dump_intermediate_microcode:
-                dump_microcode_for_debug(mba, self.manager.log_dir, "input_instruction_optimizer")
+                dump_microcode_for_debug(mba, self.log_dir, "input_instruction_optimizer")
 
         if blk.serial != self.current_blk_serial:
             self.current_blk_serial = blk.serial
@@ -158,12 +159,13 @@ class InstructionOptimizerManager(optinsn_t):
             ins_optimizer.add_rule(rule)
         self.analyzer.add_rule(rule)
 
-    def configure(self, generate_z3_code=False, dump_intermediate_microcode=False, **kwargs):
+    def configure(self, generate_z3_code=False, dump_intermediate_microcode=False):
         self.generate_z3_code = generate_z3_code
         self.dump_intermediate_microcode = dump_intermediate_microcode
 
     def optimize(self, blk: mblock_t, ins: minsn_t) -> bool:
         # optimizer_log.info("Trying to optimize {0}".format(format_minsn_t(ins)))
+        # print("Trying to optimize {0}".format(format_minsn_t(ins)))
         for ins_optimizer in self.instruction_optimizers:
             self._last_optimizer_tried = ins_optimizer
             new_ins = ins_optimizer.get_optimized_instruction(blk, ins)
@@ -201,10 +203,9 @@ class InstructionVisitorManager(minsn_visitor_t):
 
 
 class BlockOptimizerManager(optblock_t):
-    def __init__(self, manager: OptimizerManager):
+    def __init__(self):
         optimizer_logger.debug("Initializing {0}...".format(self.__class__.__name__))
         super().__init__()
-        self.manager = manager
         self.cfg_rules = set()
 
         self.current_maturity = None
@@ -263,11 +264,11 @@ class BlockOptimizerManager(optblock_t):
 
 
 class HexraysDecompilationHook(Hexrays_Hooks):
-    def __init__(self, manager):
+    def __init__(self, manager: OptimizerManager):
         super().__init__()
         self.manager = manager
 
-    def prolog(self, mba: mbl_array_t, fc, reachable_blocks, decomp_flags) -> "int":
+    def prolog(self, mba: mbl_array_t, fc: qflow_chart_t, reachable_blocks, decomp_flags) -> "int":
         main_logger.info("Starting decompilation of function at 0x{0:x}".format(mba.entry_ea))
         self.manager.instruction_optimizer.reset_rule_usage_statistic()
         self.manager.block_optimizer.reset_rule_usage_statistic()

@@ -24,9 +24,9 @@ class OptimizerManager(object):
 
         from d810.hexrays_hooks import InstructionOptimizerManager, BlockOptimizerManager, HexraysDecompilationHook
 
-        self.instruction_optimizer = InstructionOptimizerManager(self)
+        self.instruction_optimizer = InstructionOptimizerManager(self.log_dir)
         self.instruction_optimizer.configure(**self.instruction_optimizer_config)
-        self.block_optimizer = BlockOptimizerManager(self)
+        self.block_optimizer = BlockOptimizerManager()
         self.block_optimizer.configure(**self.block_optimizer_config)
 
         for rule in self.instruction_optimizer_rules:
@@ -43,6 +43,7 @@ class OptimizerManager(object):
         self.hx_decompiler_hook = HexraysDecompilationHook(self)
         self.hx_decompiler_hook.hook()
 
+    #def configure_instruction_optimizer(self, rules, generate_z3_code: bool, dump_intermediate_microcode: bool, **kwargs):
     def configure_instruction_optimizer(self, rules, **kwargs):
         self.instruction_optimizer_rules = [rule for rule in rules]
         self.instruction_optimizer_config = kwargs
