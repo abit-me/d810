@@ -161,14 +161,14 @@ class PatternOptimizer(InstructionOptimizer):
 
     def __init__(self, maturities, log_dir=None):
         super().__init__(maturities, log_dir=log_dir)
-        self.pattern_storage = PatternStorage(depth=1)
+        self.storage = PatternStorage(depth=1)
 
     def add_rule(self, rule: InstructionOptimizationRule):
         is_ok = super().add_rule(rule)
         if not is_ok:
             return False
         for pattern in rule.pattern_candidates:
-            self.pattern_storage.add_pattern_for_rule(pattern, rule)
+            self.storage.add_pattern_for_rule(pattern, rule)
         return True
 
     def get_optimized_instruction(self, blk: mblock_t, ins: minsn_t) -> Union[None, minsn_t]:
@@ -180,7 +180,7 @@ class PatternOptimizer(InstructionOptimizer):
         if tmp is None:
             return None
 
-        all_matchs = self.pattern_storage.get_matching_rule_pattern_info(tmp)
+        all_matchs = self.storage.get_matching_rule_pattern_info(tmp)
         for rule_pattern_info in all_matchs:
             try:
                 new_ins = rule_pattern_info.rule.check_pattern_and_replace(rule_pattern_info.pattern, tmp)
