@@ -89,9 +89,9 @@ class ProjectManager:
         self.current_ins_rules = []
         self.current_blk_rules = []
 
-        # print("指令级规则:")
+        # print("known_ins_rules:")
         # self.dump_ins_rules(self.known_ins_rules)
-        # print("\n块级规则:")
+        # print("\nknown_blk_rules:")
         # self.dump_blk_rules(self.known_blk_rules)
 
         for ins_rule in self.known_ins_rules:
@@ -109,10 +109,10 @@ class ProjectManager:
                     blk_rule.set_log_dir(self.log_dir)
                     self.current_blk_rules.append(blk_rule)
 
-        # print("当前指令级规则:\n")
+        # print("current_ins_rules:\n")
         # self.dump_ins_rules(self.current_ins_rules)
         #
-        # print("当前块级规则:\n")
+        # print("current_blk_rules:\n")
         # self.dump_blk_rules(self.current_blk_rules)
 
         logger.debug("Block rules configured")
