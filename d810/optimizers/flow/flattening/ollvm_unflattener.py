@@ -1,11 +1,7 @@
 import logging
-from typing import Tuple, List
 from ida_hexrays import *
-from collections import Counter
-from d810.hexrays_helpers import extract_num_mop, append_mop_if_not_in_list
-from d810.optimizers.flow.flattening.generic import GenericDispatcherCollector, GenericDispatcherInfo, \
-    GenericDispatcherBlockInfo, GenericDispatcherUnflatteningRule
-
+from d810.hexrays.hexrays_helpers import extract_num_mop, append_mop_if_not_in_list
+from d810.optimizers.flow.flattening.generic import GenericDispatcherCollector, GenericDispatcherInfo, GenericDispatcherBlockInfo, GenericDispatcherUnflatteningRule
 
 unflat_logger = logging.getLogger('D810.unflat')
 FLATTENING_JUMP_OPCODES = [m_jnz, m_jz, m_jae, m_jb, m_ja, m_jbe, m_jg, m_jge, m_jl, m_jle]

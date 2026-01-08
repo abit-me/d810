@@ -1,8 +1,7 @@
+from d810.optimizers.instructions.pattern_matching import PatternMatchingRule
 from ida_hexrays import *
-
-from d810.optimizers.instructions.pattern_matching.handler import PatternMatchingRule
-from d810.ast import AstLeaf, AstConstant, AstNode
-from d810.hexrays_formatters import  format_mop_t
+from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.hexrays.hexrays_formatters import  format_mop_t
 
 class ReplaceMovHigh(PatternMatchingRule):
     PATTERN = AstNode(m_mov,

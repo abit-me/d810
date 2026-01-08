@@ -111,7 +111,6 @@ class ProjectManager:
 
         # print("current_ins_rules:\n")
         # self.dump_ins_rules(self.current_ins_rules)
-        #
         # print("current_blk_rules:\n")
         # self.dump_blk_rules(self.current_blk_rules)
 

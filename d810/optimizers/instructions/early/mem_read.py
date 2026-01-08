@@ -1,8 +1,7 @@
 from ida_hexrays import *
 from idaapi import SEGPERM_READ, SEGPERM_WRITE, xrefblk_t, getseg, segment_t, XREF_DATA, dr_W, is_loaded
-
-from d810.optimizers.instructions.early.handler import EarlyRule
-from d810.ast import AstLeaf, AstConstant, AstNode
+from d810.optimizers.instructions.early.early_rule import EarlyRule
+from d810.expr.ast import AstLeaf, AstConstant, AstNode
 
 
 class SetGlobalVariablesToZero(EarlyRule):

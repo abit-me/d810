@@ -1,7 +1,6 @@
 import logging
 import idc
-
-from d810.optimizers.handler import OptimizationRule, DEFAULT_FLOW_MATURITIES
+from d810.optimizers.optimization_rule import OptimizationRule, DEFAULT_FLOW_MATURITIES
 
 logger = logging.getLogger('D810.optimizer')
 

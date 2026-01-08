@@ -1,8 +1,7 @@
 from ida_hexrays import *
-
-from d810.optimizers.instructions.pattern_matching.handler import PatternMatchingRule
-from d810.ast import AstLeaf, AstConstant, AstNode
-from d810.hexrays_helpers import equal_ignore_msb_cst, equal_bnot_mop, AND_TABLE
+from d810.optimizers.instructions.pattern_matching.pattern_optimizer import PatternMatchingRule
+from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.hexrays.hexrays_helpers import equal_ignore_msb_cst, equal_bnot_mop, AND_TABLE
 
 
 class Add_HackersDelightRule_1(PatternMatchingRule):

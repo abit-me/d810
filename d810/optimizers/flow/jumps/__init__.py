@@ -1,7 +1,7 @@
-from d810.utils import get_all_subclasses
-from d810.optimizers.flow.jumps.handler import JumpOptimizationRule, JumpFixer
-from d810.optimizers.flow.jumps.opaque import *
-from d810.optimizers.flow.jumps.tricks import *
+from d810.expr.utils import get_all_subclasses
+from d810.optimizers.flow.jumps.jump_fixer import JumpOptimizationRule, JumpFixer
+from d810.optimizers.flow.jumps.jump_rule import *
+from d810.optimizers.flow.jumps.compare_constant_rule import *
 
 
 JUMP_OPTIMIZATION_RULES = [x() for x in get_all_subclasses(JumpOptimizationRule)]

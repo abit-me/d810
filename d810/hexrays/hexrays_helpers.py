@@ -1,7 +1,6 @@
 from ida_hexrays import *
 from typing import List, Tuple
-from ida_hexrays import mop_d, mop_n, m_stx, m_ldx, m_xdu, m_xds, mop_z, mop_fn, mop_S, mop_v, EQ_IGNSIZE, mop_b, \
-    mop_r, mop_f, mop_l, mop_a, mop_h, mop_str, mop_c, mop_p, mop_sc
+from ida_hexrays import mop_d, mop_n, m_stx, m_ldx, m_xdu, m_xds, mop_z, mop_fn, mop_S, mop_v, EQ_IGNSIZE, mop_b, mop_r, mop_f, mop_l, mop_a, mop_h, mop_str, mop_c, mop_p, mop_sc
 
 
 OPCODES_INFO = {

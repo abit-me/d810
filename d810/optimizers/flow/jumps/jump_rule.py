@@ -1,7 +1,6 @@
 from ida_hexrays import *
-
-from d810.ast import AstLeaf, AstConstant, AstNode
-from d810.optimizers.flow.jumps.handler import JumpOptimizationRule
+from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.optimizers.flow.jumps.jump_fixer import JumpOptimizationRule
 
 
 class JnzRule1(JumpOptimizationRule):

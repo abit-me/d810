@@ -1,17 +1,10 @@
 import logging
 import idaapi
-from typing import List
 from ida_hexrays import *
 
-from d810.hexrays_helpers import append_mop_if_not_in_list, AND_TABLE, CONTROL_FLOW_OPCODES
-from d810.tracker import MopTracker, MopHistory
-from d810.optimizers.flow.flattening.generic import GenericDispatcherBlockInfo, GenericDispatcherInfo, \
-    GenericDispatcherCollector, GenericDispatcherUnflatteningRule, NotDuplicableFatherException, DispatcherUnflatteningException, NotResolvableFatherException
-from d810.optimizers.flow.flattening.utils import configure_mop_tracker_log_verbosity, restore_mop_tracker_log_verbosity
-from d810.tracker import duplicate_histories
-from d810.cfg_utils import create_block, change_1way_block_successor
-from d810.hexrays_formatters import format_minsn_t, format_mop_t
-from d810.emulator import MicroCodeEnvironment, MicroCodeInterpreter
+from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, AND_TABLE
+from d810.hexrays.tracker import MopTracker, MopHistory
+from d810.optimizers.flow.flattening.generic import GenericDispatcherBlockInfo, GenericDispatcherInfo, GenericDispatcherCollector, GenericDispatcherUnflatteningRule
 
 unflat_logger = logging.getLogger('D810.unflat')
 FLATTENING_JUMP_OPCODES = [m_jtbl]

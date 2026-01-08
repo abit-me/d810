@@ -8,7 +8,6 @@ if TYPE_CHECKING:
     pass
 
 from d810.configuration import D810Configuration
-
 from d810.module_manager import reload_all_modules
 from d810.optimizer_manager import OptimizerManager
 from d810.project_manager import get_project_manager

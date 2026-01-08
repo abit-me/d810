@@ -22,7 +22,7 @@ class OptimizerManager(object):
         self.stop()
         logger.debug("Reloading manager...")
 
-        from d810.hexrays_hooks import InstructionOptimizerManager, BlockOptimizerManager, HexraysDecompilationHook
+        from d810.hexrays.hexrays_hooks import InstructionOptimizerManager, BlockOptimizerManager, HexraysDecompilationHook
 
         self.instruction_optimizer = InstructionOptimizerManager(self.log_dir)
         self.instruction_optimizer.configure(**self.instruction_optimizer_config)

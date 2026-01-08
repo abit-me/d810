@@ -1,21 +1,14 @@
 from __future__ import annotations
 import logging
-from typing import List, Union, Tuple
-
 from ida_hexrays import *
-
-from d810.optimizers.flow.handler import FlowOptimizationRule
-
-from d810.tracker import MopTracker, MopHistory, remove_segment_registers, duplicate_histories
-from d810.emulator import MicroCodeEnvironment, MicroCodeInterpreter
-from d810.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays_helpers import extract_num_mop, get_mop_index, append_mop_if_not_in_list, CONTROL_FLOW_OPCODES, \
-    CONDITIONAL_JUMP_OPCODES
-from d810.hexrays_formatters import format_minsn_t, format_mop_t, dump_microcode_for_debug, format_mop_list
-from d810.cfg_utils import mba_deep_cleaning, ensure_child_has_an_unconditional_father, ensure_last_block_is_goto, \
-    change_1way_block_successor, create_block
-from d810.optimizers.flow.flattening.utils import NotResolvableFatherException, NotDuplicableFatherException, \
-    DispatcherUnflatteningException, get_all_possibles_values, check_if_all_values_are_found
+from d810.optimizers.flow.flow_optimization_rule import FlowOptimizationRule
+from d810.hexrays.tracker import MopTracker, MopHistory, remove_segment_registers, duplicate_histories
+from d810.expr.emulator import MicroCodeEnvironment, MicroCodeInterpreter
+from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
+from d810.hexrays.hexrays_helpers import extract_num_mop, get_mop_index, append_mop_if_not_in_list, CONTROL_FLOW_OPCODES, CONDITIONAL_JUMP_OPCODES
+from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t, dump_microcode_for_debug, format_mop_list
+from d810.hexrays.cfg_utils import mba_deep_cleaning, ensure_child_has_an_unconditional_father, ensure_last_block_is_goto, change_1way_block_successor, create_block
+from d810.optimizers.flow.flattening.unflattener_util import NotResolvableFatherException, NotDuplicableFatherException, get_all_possibles_values, check_if_all_values_are_found
 
 unflat_logger = logging.getLogger('D810.unflat')
 

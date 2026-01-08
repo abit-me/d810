@@ -1,17 +1,15 @@
 import logging
-from typing import List
 from ida_hexrays import *
-
-from d810.tracker import MopTracker
-from d810.cfg_utils import change_1way_block_successor
-from d810.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
-from d810.optimizers.flow.flattening.utils import get_all_possibles_values
+from d810.hexrays.tracker import MopTracker
+from d810.hexrays.cfg_utils import change_1way_block_successor
+from d810.hexrays.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
+from d810.optimizers.flow.flattening.unflattener_util import get_all_possibles_values
 from d810.optimizers.flow.flattening.generic import GenericUnflatteningRule
+
 
 unflat_logger = logging.getLogger('D810.unflat')
 
 FAKE_LOOP_OPCODES = [m_jz, m_jnz]
-
 
 class FakeJumpUnflattener(GenericUnflatteningRule):
     DESCRIPTION = "Check if a jump is always taken for each father blocks and remove them"

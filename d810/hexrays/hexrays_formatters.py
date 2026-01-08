@@ -1,10 +1,8 @@
 import os
 import logging
 from typing import List
-
-from d810.hexrays_helpers import OPCODES_INFO, MATURITY_TO_STRING_DICT, STRING_TO_MATURITY_DICT, MOP_TYPE_TO_STRING_DICT
+from d810.hexrays.hexrays_helpers import OPCODES_INFO, MATURITY_TO_STRING_DICT, STRING_TO_MATURITY_DICT, MOP_TYPE_TO_STRING_DICT
 from ida_hexrays import minsn_t, mop_t, vd_printer_t, mbl_array_t
-
 
 logger = logging.getLogger('D810.helper')
 

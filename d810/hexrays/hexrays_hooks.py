@@ -1,22 +1,18 @@
 from __future__ import annotations
 import logging
-
 from ida_gdl import qflow_chart_t
 from ida_hexrays import *
-
-from d810.optimizers.instructions import PatternOptimizer, ChainOptimizer, Z3Optimizer, EarlyOptimizer, \
-    InstructionAnalyzer
-from d810.hexrays_helpers import check_ins_mop_size_are_ok, append_mop_if_not_in_list
-from d810.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string, mop_type_to_string, \
-    dump_microcode_for_debug
+from d810.optimizers.instructions import PatternOptimizer, ChainOptimizer, Z3Optimizer, EarlyOptimizer, InstructionAnalyzer
+from d810.hexrays.hexrays_helpers import check_ins_mop_size_are_ok, append_mop_if_not_in_list
+from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string, mop_type_to_string, dump_microcode_for_debug
 from d810.errors import D810Exception
-from d810.z3_utils import log_z3_instructions
+from d810.expr.z3_utils import log_z3_instructions
+from typing import TYPE_CHECKING
 
-from typing import TYPE_CHECKING, List
 if TYPE_CHECKING:
     from d810.optimizer_manager import OptimizerManager
-    from d810.optimizers.instructions.handler import InstructionOptimizer, InstructionOptimizationRule
-    from d810.optimizers.flow.handler import FlowOptimizationRule
+    from d810.optimizers.instructions.instruction_optimizer import InstructionOptimizer, InstructionOptimizationRule
+    from d810.optimizers.flow.flow_optimization_rule import FlowOptimizationRule
 
 main_logger = logging.getLogger('D810')
 optimizer_logger = logging.getLogger('D810.optimizer')

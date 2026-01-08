@@ -1,16 +1,10 @@
 from __future__ import annotations
 import logging
-from typing import List, Union, Dict, Tuple
-
 from ida_hexrays import *
-
-from d810.utils import unsigned_to_signed, signed_to_unsigned, \
-    get_add_cf, get_add_of, get_sub_of, get_parity_flag
-from d810.hexrays_helpers import OPCODES_INFO, MBA_RELATED_OPCODES, Z3_SPECIAL_OPERANDS, MINSN_TO_AST_FORBIDDEN_OPCODES, \
-    equal_mops_ignore_size, AND_TABLE
-from d810.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.expr.utils import unsigned_to_signed, signed_to_unsigned, get_add_cf, get_add_of, get_sub_of, get_parity_flag
+from d810.hexrays.hexrays_helpers import OPCODES_INFO, MBA_RELATED_OPCODES, Z3_SPECIAL_OPERANDS, MINSN_TO_AST_FORBIDDEN_OPCODES, equal_mops_ignore_size, AND_TABLE
+from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
 from d810.errors import AstEvaluationException
-
 logger = logging.getLogger('D810')
 
 

@@ -1,13 +1,12 @@
 from __future__ import annotations
 import logging
-from typing import List, Union, Tuple, Dict
+from typing import Dict
 from ida_hexrays import *
-
-from d810.emulator import MicroCodeEnvironment, MicroCodeInterpreter
-from d810.cfg_utils import change_1way_block_successor, change_2way_block_conditional_successor, duplicate_block
-from d810.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays_helpers import equal_mops_ignore_size, get_mop_index, get_blk_index
-from d810.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.expr.emulator import MicroCodeEnvironment, MicroCodeInterpreter
+from d810.hexrays.cfg_utils import change_1way_block_successor, change_2way_block_conditional_successor, duplicate_block
+from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
+from d810.hexrays.hexrays_helpers import equal_mops_ignore_size, get_mop_index, get_blk_index
+from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
 
 # This module can be use to find the instruction that define the value of a mop. Basically, you:
 # 1 - Create a MopTracker object with the list of mops to search

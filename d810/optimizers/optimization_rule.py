@@ -1,6 +1,5 @@
 from ida_hexrays import *
-
-from d810.hexrays_formatters import string_to_maturity
+from d810.hexrays.hexrays_formatters import string_to_maturity
 
 DEFAULT_INSTRUCTION_MATURITIES = [MMAT_LOCOPT, MMAT_CALLS, MMAT_GLBOPT1]
 DEFAULT_FLOW_MATURITIES = [MMAT_CALLS, MMAT_GLBOPT1]

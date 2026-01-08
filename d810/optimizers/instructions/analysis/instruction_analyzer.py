@@ -1,15 +1,10 @@
 import logging
 from ida_hexrays import *
-from d810.hexrays_formatters import format_minsn_t
-from d810.optimizers.instructions.handler import InstructionOptimizer, InstructionOptimizationRule
-
+from d810.hexrays.hexrays_formatters import format_minsn_t
+from d810.optimizers.instructions.analysis import InstructionAnalysisRule
+from d810.optimizers.instructions.instruction_optimizer import InstructionOptimizer
 
 optimizer_logger = logging.getLogger('D810.optimizer')
-
-
-class InstructionAnalysisRule(InstructionOptimizationRule):
-    def analyze_instruction(self, blk, ins):
-        raise NotImplementedError
 
 
 class InstructionAnalyzer(InstructionOptimizer):

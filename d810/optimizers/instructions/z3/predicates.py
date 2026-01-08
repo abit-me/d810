@@ -1,8 +1,7 @@
 from ida_hexrays import *
-
-from d810.optimizers.instructions.z3.handler import Z3Rule
-from d810.ast import AstLeaf, AstConstant, AstNode
-from d810.z3_utils import z3_check_mop_equality, z3_check_mop_inequality
+from d810.optimizers.instructions.z3.z3_optimizer import Z3Rule
+from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.expr.z3_utils import z3_check_mop_equality, z3_check_mop_inequality
 
 
 class Z3setzRuleGeneric(Z3Rule):
