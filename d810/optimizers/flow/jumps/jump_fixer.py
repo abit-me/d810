@@ -4,7 +4,7 @@ from ida_hexrays import *
 from d810.expr.ast import mop_to_ast
 from d810.hexrays.hexrays_formatters import format_minsn_t
 from d810.optimizers.flow.flow_optimization_rule import FlowOptimizationRule
-from d810.hexrays.cfg_utils import make_2way_block_goto, is_conditional_jump, change_2way_block_conditional_successor
+from d810.hexrays.cfg_util import make_2way_block_goto, is_conditional_jump, change_2way_block_conditional_successor
 
 
 logger = logging.getLogger("D810.branch_fixer")

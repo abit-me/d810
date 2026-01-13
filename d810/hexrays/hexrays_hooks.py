@@ -6,7 +6,7 @@ from d810.optimizers.instructions import PatternOptimizer, ChainOptimizer, Z3Opt
 from d810.hexrays.hexrays_helpers import check_ins_mop_size_are_ok, append_mop_if_not_in_list
 from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string, mop_type_to_string, dump_microcode_for_debug
 from d810.errors import D810Exception
-from d810.expr.z3_utils import log_z3_instructions
+from d810.expr.z3_util import log_z3_instructions
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

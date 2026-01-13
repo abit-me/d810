@@ -4,22 +4,6 @@ CTYPE_SIGNED_TABLE = {1: ctypes.c_int8, 2: ctypes.c_int16, 4: ctypes.c_int32, 8:
 CTYPE_UNSIGNED_TABLE = {1: ctypes.c_uint8, 2: ctypes.c_uint16, 4: ctypes.c_uint32, 8: ctypes.c_uint64}
 
 
-def get_all_subclasses(python_class):
-    python_class.__subclasses__()
-
-    subclasses = set()
-    check_these = [python_class]
-
-    while check_these:
-        parent = check_these.pop()
-        for child in parent.__subclasses__():
-            if child not in subclasses:
-                subclasses.add(child)
-                check_these.append(child)
-
-    return sorted(subclasses, key=lambda x: x.__name__)
-
-
 def unsigned_to_signed(unsigned_value, nb_bytes):
     return CTYPE_SIGNED_TABLE[nb_bytes](unsigned_value).value
 

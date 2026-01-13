@@ -4,7 +4,7 @@ from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_list
 from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, \
     extract_num_mop
 from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays.tracker import remove_segment_registers
+from d810.hexrays.mop_tracker import remove_segment_registers
 from ida_hexrays import *
 
 unflat_logger = logging.getLogger('D810.unflat')

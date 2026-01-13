@@ -3,7 +3,7 @@ from d810.optimizers.instructions.z3.z3_optimizer import Z3Rule
 from d810.expr.ast import AstConstant, AstNode
 from d810.expr.ast import minsn_to_ast
 from d810.errors import AstEvaluationException
-from d810.expr.z3_utils import z3_check_mop_equality
+from d810.expr.z3_util import z3_check_mop_equality
 
 
 class Z3ConstantOptimization(Z3Rule):

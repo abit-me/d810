@@ -1,12 +1,10 @@
 from __future__ import annotations
 import logging
 
-from d810.expr.emulator import MicroCodeInterpreter, MicroCodeEnvironment
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_list, format_mop_t
-from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, \
-    extract_num_mop
-from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays.tracker import remove_segment_registers, MopHistory
+from d810.expr.microcode_environment import MicroCodeEnvironment
+from d810.expr.microcode_interpreter import MicroCodeInterpreter
+from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.hexrays.mop_tracker import MopHistory
 from d810.optimizers.flow.flattening.unflattener_util import NotResolvableFatherException
 from ida_hexrays import *
 

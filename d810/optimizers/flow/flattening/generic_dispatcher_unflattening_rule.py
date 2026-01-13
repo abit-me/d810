@@ -1,11 +1,11 @@
 from __future__ import annotations
 import logging
 
-from d810.hexrays.cfg_utils import ensure_child_has_an_unconditional_father, create_block, change_1way_block_successor, \
+from d810.hexrays.cfg_util import ensure_child_has_an_unconditional_father, create_block, change_1way_block_successor, \
     ensure_last_block_is_goto, mba_deep_cleaning
 from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_list, dump_microcode_for_debug, format_mop_t
 from d810.hexrays.hexrays_helpers import CONTROL_FLOW_OPCODES
-from d810.hexrays.tracker import MopHistory, MopTracker, duplicate_histories
+from d810.hexrays.mop_tracker import MopHistory, MopTracker, duplicate_histories
 from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
 from d810.optimizers.flow.flattening.generic_dispatcher_collector import GenericDispatcherCollector
 from d810.optimizers.flow.flattening.generic_dispatcher_info import GenericDispatcherInfo

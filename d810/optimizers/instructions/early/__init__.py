@@ -1,4 +1,4 @@
-from d810.expr.utils import get_all_subclasses
+from d810.module_manager import get_all_subclasses
 from d810.optimizers.instructions.early.early_rule import EarlyRule, EarlyOptimizer
 from d810.optimizers.instructions.early.mem_read import *
 

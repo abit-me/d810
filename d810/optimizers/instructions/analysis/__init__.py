@@ -1,4 +1,4 @@
-from d810.expr.utils import get_all_subclasses
+from d810.module_manager import get_all_subclasses
 from d810.optimizers.instructions.analysis.instruction_analysis_rule import InstructionAnalysisRule
 from d810.optimizers.instructions.analysis.instruction_analyzer import InstructionAnalyzer
 from d810.optimizers.instructions.analysis.example_guessing_rule import *

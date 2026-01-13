@@ -1,6 +1,6 @@
 from d810.optimizers.instructions.pattern_matching.pattern_matching_rule import PatternMatchingRule
 from d810.optimizers.instructions.pattern_matching.pattern_optimizer import PatternOptimizer
-from d810.expr.utils import get_all_subclasses
+from d810.module_manager import get_all_subclasses
 from d810.optimizers.instructions.pattern_matching.rewrite_add import *
 from d810.optimizers.instructions.pattern_matching.rewrite_and import *
 from d810.optimizers.instructions.pattern_matching.rewrite_bnot import *
