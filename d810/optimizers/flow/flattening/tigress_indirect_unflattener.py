@@ -1,10 +1,13 @@
 import logging
 import idaapi
+from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
+from d810.optimizers.flow.flattening.generic_dispatcher_collector import GenericDispatcherCollector
+from d810.optimizers.flow.flattening.generic_dispatcher_info import GenericDispatcherInfo
+from d810.optimizers.flow.flattening.generic_dispatcher_unflattening_rule import GenericDispatcherUnflatteningRule
 from ida_hexrays import *
 
 from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, AND_TABLE
 from d810.hexrays.tracker import MopTracker, MopHistory
-from d810.optimizers.flow.flattening.generic import GenericDispatcherBlockInfo, GenericDispatcherInfo, GenericDispatcherCollector, GenericDispatcherUnflatteningRule
 
 unflat_logger = logging.getLogger('D810.unflat')
 FLATTENING_JUMP_OPCODES = [m_jtbl]
