@@ -25,14 +25,10 @@ class FlowOptimizationRule(OptimizationRule):
             for func_ea in self.config["whitelisted_functions"]:
                 self.whitelisted_function_ea_list.append(int(func_ea, 16))
             func_name_list = [idc.get_func_name(ea) for ea in self.whitelisted_function_ea_list]
-            logger.info("Whitelisted functions for {0}: {1} -> {2}".format(self.__class__.__name__,
-                                                                           self.whitelisted_function_ea_list,
-                                                                           func_name_list))
+            logger.info("Whitelisted functions for {0}: {1} -> {2}".format(self.__class__.__name__, self.whitelisted_function_ea_list, func_name_list))
         if "blacklisted_functions" in self.config.keys():
             self.use_blacklist = True
             for func_ea in self.config["whitelisted_functions"]:
                 self.blacklisted_function_ea_list.append(int(func_ea, 16))
             func_name_list = [idc.get_func_name(ea) for ea in self.blacklisted_function_ea_list]
-            logger.info("Blacklisted functions for {0}: {1} -> {2}".format(self.__class__.__name__,
-                                                                           self.blacklisted_function_ea_list,
-                                                                           func_name_list))
+            logger.info("Blacklisted functions for {0}: {1} -> {2}".format(self.__class__.__name__, self.blacklisted_function_ea_list, func_name_list))

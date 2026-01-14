@@ -1,4 +1,4 @@
-from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list
+from d810.helper.hexrays_helpers import append_mop_if_not_in_list
 from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
 from d810.optimizers.flow.flattening.generic_dispatcher_info import GenericDispatcherInfo
 from ida_hexrays import *

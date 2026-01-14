@@ -1,11 +1,11 @@
 from __future__ import annotations
 import logging
 
-from d810.expr.microcode_environment import MicroCodeEnvironment
-from d810.expr.microcode_interpreter import MicroCodeInterpreter
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
-from d810.hexrays.mop_tracker import MopHistory
-from d810.optimizers.flow.flattening.unflattener_util import NotResolvableFatherException
+from d810.error.errors import NotResolvableFatherException
+from d810.microcode.microcode_environment import MicroCodeEnvironment
+from d810.microcode.microcode_interpreter import MicroCodeInterpreter
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.mop.mop_tracker import MopHistory
 from ida_hexrays import *
 
 unflat_logger = logging.getLogger('D810.unflat')
@@ -31,10 +31,8 @@ class GenericDispatcherInfo(object):
 
     def get_shared_internal_blocks(self, other_dispatcher: GenericDispatcherInfo) -> List[mblock_t]:
         my_dispatcher_block_serial = [blk_info.blk.serial for blk_info in self.dispatcher_internal_blocks]
-        other_dispatcher_block_serial = [blk_info.blk.serial
-                                         for blk_info in other_dispatcher.dispatcher_internal_blocks]
-        return [self.mba.get_mblock(blk_serial) for blk_serial in my_dispatcher_block_serial
-                if blk_serial in other_dispatcher_block_serial]
+        other_dispatcher_block_serial = [blk_info.blk.serial for blk_info in other_dispatcher.dispatcher_internal_blocks]
+        return [self.mba.get_mblock(blk_serial) for blk_serial in my_dispatcher_block_serial if blk_serial in other_dispatcher_block_serial]
 
     def is_sub_dispatcher(self, other_dispatcher: GenericDispatcherInfo) -> bool:
         shared_blocks = self.get_shared_internal_blocks(other_dispatcher)
@@ -58,15 +56,12 @@ class GenericDispatcherInfo(object):
             # We recover the value of each state variable from the dispatcher father
             initialization_mop_value = father_history.get_mop_constant_value(initialization_mop)
             if initialization_mop_value is None:
-                raise NotResolvableFatherException("Can't emulate dispatcher {0} with history {1}"
-                                                   .format(self.entry_block.serial, father_history.block_serial_path))
+                raise NotResolvableFatherException("Can't emulate dispatcher {0} with history {1}".format(self.entry_block.serial, father_history.block_serial_path))
             # We store this value in the MicroCodeEnvironment
             microcode_environment.define(initialization_mop, initialization_mop_value)
-            dispatcher_input_info.append("{0} = {1:x}".format(format_mop_t(initialization_mop),
-                                                              initialization_mop_value))
+            dispatcher_input_info.append("{0} = {1:x}".format(format_mop_t(initialization_mop), initialization_mop_value))
 
-        unflat_logger.info("Executing dispatcher {0} with: {1}"
-                           .format(self.entry_block.blk.serial, ", ".join(dispatcher_input_info)))
+        unflat_logger.info("Executing dispatcher {0} with: {1}".format(self.entry_block.blk.serial, ", ".join(dispatcher_input_info)))
 
         # Now, we start the emulation of the code at the dispatcher entry block
         instructions_executed = []
@@ -89,26 +84,18 @@ class GenericDispatcherInfo(object):
 
     def print_info(self, verbose=False):
         unflat_logger.info("Dispatcher information: ")
-        unflat_logger.info("  Entry block: {0}.{1}: ".format(self.entry_block.blk.serial,
-                                                             format_minsn_t(self.entry_block.blk.tail)))
-        unflat_logger.info("  Entry block predecessors: {0}: "
-                           .format([blk_serial for blk_serial in self.entry_block.blk.predset]))
+        unflat_logger.info("  Entry block: {0}.{1}: ".format(self.entry_block.blk.serial, format_minsn_t(self.entry_block.blk.tail)))
+        unflat_logger.info("  Entry block predecessors: {0}: ".format([blk_serial for blk_serial in self.entry_block.blk.predset]))
         unflat_logger.info("    Compared mop: {0} ".format(format_mop_t(self.mop_compared)))
         unflat_logger.info("    Comparison values: {0} ".format(", ".join([hex(x) for x in self.comparison_values])))
         self.entry_block.print_info()
-        unflat_logger.info("  Number of internal blocks: {0} ({1})"
-                           .format(len(self.dispatcher_internal_blocks),
-                                   [blk_info.blk.serial for blk_info in self.dispatcher_internal_blocks]))
+        unflat_logger.info("  Number of internal blocks: {0} ({1})".format(len(self.dispatcher_internal_blocks), [blk_info.blk.serial for blk_info in self.dispatcher_internal_blocks]))
         if verbose:
             for disp_blk in self.dispatcher_internal_blocks:
-                unflat_logger.info("    Internal block: {0}.{1} ".format(disp_blk.blk.serial,
-                                                                         format_minsn_t(disp_blk.blk.tail)))
+                unflat_logger.info("    Internal block: {0}.{1} ".format(disp_blk.blk.serial, format_minsn_t(disp_blk.blk.tail)))
                 disp_blk.show_history()
-        unflat_logger.info("  Number of Exit blocks: {0} ({1})"
-                           .format(len(self.dispatcher_exit_blocks),
-                                   [blk_info.blk.serial for blk_info in self.dispatcher_exit_blocks]))
+        unflat_logger.info("  Number of Exit blocks: {0} ({1})".format(len(self.dispatcher_exit_blocks), [blk_info.blk.serial for blk_info in self.dispatcher_exit_blocks]))
         if verbose:
             for exit_blk in self.dispatcher_exit_blocks:
-                unflat_logger.info("    Exit block: {0}.{1} ".format(exit_blk.blk.serial,
-                                                                     format_minsn_t(exit_blk.blk.head)))
+                unflat_logger.info("    Exit block: {0}.{1} ".format(exit_blk.blk.serial, format_minsn_t(exit_blk.blk.head)))
                 exit_blk.show_history()

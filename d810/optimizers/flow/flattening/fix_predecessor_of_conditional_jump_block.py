@@ -2,11 +2,11 @@ import logging
 
 from d810.optimizers.flow.flattening.generic_unflattening_rule import GenericUnflatteningRule
 from ida_hexrays import *
-from d810.hexrays.mop_tracker import MopTracker
-from d810.hexrays.cfg_util import duplicate_block, make_2way_block_goto, update_blk_successor
-from d810.hexrays.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
+from d810.mop.mop_tracker import MopTracker
+from d810.helper.cfg_util import duplicate_block, make_2way_block_goto, update_blk_successor
+from d810.format.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
 from d810.optimizers.flow.flattening.unflattener_util import get_all_possibles_values
-from d810.expr.arithmetic_util import unsigned_to_signed
+from d810.helper.arithmetic_util import unsigned_to_signed
 
 
 unflat_logger = logging.getLogger('D810.unflat')
@@ -86,8 +86,7 @@ class FixPredecessorOfConditionalJumpBlock(GenericUnflatteningRule):
             pred_histories = cmp_variable_tracker.search_backward(pred_blk, pred_blk.tail)
             pred_values = get_all_possibles_values(pred_histories, [op_compared])
             pred_values = [x[0] for x in pred_values]
-            unflat_logger.info("Pred {0} has {1} possible path ({2} different cst): {3}"
-                               .format(pred_blk.serial, len(pred_values), len(set(pred_values)), pred_values))
+            unflat_logger.info("Pred {0} has {1} possible path ({2} different cst): {3}".format(pred_blk.serial, len(pred_values), len(set(pred_values)), pred_values))
             if None in pred_values:
                 pred_jmp_unk.append(pred_blk)
                 continue

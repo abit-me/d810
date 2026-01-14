@@ -1,4 +1,4 @@
-from d810.module_manager import get_all_subclasses
+from d810.project.module_manager import get_all_subclasses
 from d810.optimizers.instructions.chain.chain_optimizer import ChainSimplificationRule, ChainOptimizer
 from d810.optimizers.instructions.chain.chain_rules import *
 

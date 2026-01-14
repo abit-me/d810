@@ -1,8 +1,9 @@
 import os
 import logging
 from typing import List
-from d810.hexrays.hexrays_helpers import OPCODES_INFO, MATURITY_TO_STRING_DICT, STRING_TO_MATURITY_DICT, MOP_TYPE_TO_STRING_DICT
-from ida_hexrays import minsn_t, mop_t, vd_printer_t, mbl_array_t
+from d810.helper.hexrays_helpers import OPCODES_INFO, MATURITY_TO_STRING_DICT, STRING_TO_MATURITY_DICT, MOP_TYPE_TO_STRING_DICT
+from d810.format.mba_printer import mba_printer
+from ida_hexrays import minsn_t, mop_t, mbl_array_t
 
 logger = logging.getLogger('D810.helper')
 
@@ -46,32 +47,6 @@ def opcode_to_string(opcode) -> str:
         return OPCODES_INFO[opcode]["name"]
     except KeyError:
         return "Unknown opcode: {0}".format(opcode)
-
-
-class mba_printer(vd_printer_t):
-    def __init__(self):
-        vd_printer_t.__init__(self)
-        self.mc = []
-
-    def get_mc(self):
-        return self.mc
-
-    def _print(self, indent, line):
-        self.mc.append("".join([c if 0x20 <= ord(c) <= 0x7e else "" for c in line])+"\n")
-        return 1
-
-
-class block_printer(vd_printer_t):
-    def __init__(self):
-        vd_printer_t.__init__(self)
-        self.block_ins = []
-
-    def get_block_mc(self):
-        return "\n".join(self.block_ins)
-
-    def _print(self, indent, line):
-        self.block_ins.append("".join([c if 0x20 <= ord(c) <= 0x7e else "" for c in line]))
-        return 1
 
 
 def write_mc_to_file(mba: mbl_array_t, filename: str, mba_flags: int = 0) -> bool:

@@ -1,10 +1,9 @@
-from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, extract_num_mop
+from d810.helper.hexrays_helpers import append_mop_if_not_in_list, extract_num_mop
 from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
 from d810.optimizers.flow.flattening.generic_dispatcher_info import GenericDispatcherInfo
 from ida_hexrays import *
 
 FLATTENING_JUMP_OPCODES = [m_jnz, m_jz, m_jae, m_jb, m_ja, m_jbe, m_jg, m_jge, m_jl, m_jle]
-
 
 class OllvmDispatcherBlockInfo(GenericDispatcherBlockInfo):
     pass

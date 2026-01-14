@@ -1,9 +1,9 @@
 from ida_hexrays import *
 from d810.optimizers.instructions.z3.z3_optimizer import Z3Rule
-from d810.expr.ast import AstConstant, AstNode
-from d810.expr.ast import minsn_to_ast
-from d810.errors import AstEvaluationException
-from d810.expr.z3_util import z3_check_mop_equality
+from d810.ast.ast import AstConstant, AstNode
+from d810.ast.ast import minsn_to_ast
+from d810.error.errors import AstEvaluationException
+from d810.helper.z3_util import z3_check_mop_equality
 
 
 class Z3ConstantOptimization(Z3Rule):
@@ -22,8 +22,8 @@ class Z3ConstantOptimization(Z3Rule):
         if "min_nb_constant" in kwargs.keys():
             self.min_nb_constant = kwargs["min_nb_constant"]
 
-    def check_and_replace(self, blk, instruction):
-        tmp = minsn_to_ast(instruction)
+    def check_and_replace(self, blk: mblock_t, ins: minsn_t):
+        tmp = minsn_to_ast(ins)
         if tmp is None:
             return None
         leaf_info_list, cst_leaf_values, opcodes = tmp.get_information()

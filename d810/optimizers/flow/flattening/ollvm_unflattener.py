@@ -1,6 +1,4 @@
 import logging
-
-from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
 from d810.optimizers.flow.flattening.generic_dispatcher_unflattening_rule import GenericDispatcherUnflatteningRule
 from d810.optimizers.flow.flattening.ollvm_dispatcher_collector import OllvmDispatcherCollector
 from ida_hexrays import *

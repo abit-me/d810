@@ -3,10 +3,10 @@ import logging
 from ida_gdl import qflow_chart_t
 from ida_hexrays import *
 from d810.optimizers.instructions import PatternOptimizer, ChainOptimizer, Z3Optimizer, EarlyOptimizer, InstructionAnalyzer
-from d810.hexrays.hexrays_helpers import check_ins_mop_size_are_ok, append_mop_if_not_in_list
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string, mop_type_to_string, dump_microcode_for_debug
-from d810.errors import D810Exception
-from d810.expr.z3_util import log_z3_instructions
+from d810.helper.hexrays_helpers import check_ins_mop_size_are_ok, append_mop_if_not_in_list
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string, mop_type_to_string, dump_microcode_for_debug
+from d810.error.errors import D810Exception
+from d810.helper.z3_util import log_z3_instructions
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -49,8 +49,7 @@ class InstructionDefUseCollector(mop_visitor_t):
                     return 0
                 elif op.a.t == mop_S:
                     return 0
-                helper_logger.warning("Calling visit_mop with unsupported mop type {0} - {1}: '{2}'"
-                                      .format(mop_type_to_string(op.t), mop_type_to_string(op.a.t), format_mop_t(op)))
+                helper_logger.warning("Calling visit_mop with unsupported mop type {0} - {1}: '{2}'".format(mop_type_to_string(op.t), mop_type_to_string(op.a.t), format_mop_t(op)))
                 return 0
             elif op.t == mop_n:
                 return 0
@@ -61,8 +60,7 @@ class InstructionDefUseCollector(mop_visitor_t):
             elif op.t == mop_b:
                 return 0
             else:
-                helper_logger.warning("Calling visit_mop with unsupported mop type {0}: '{1}'"
-                                      .format(mop_type_to_string(op.t), format_mop_t(op)))
+                helper_logger.warning("Calling visit_mop with unsupported mop type {0}: '{1}'".format(mop_type_to_string(op.t), format_mop_t(op)))
         return 0
 
 
@@ -86,7 +84,7 @@ class InstructionOptimizerManager(optinsn_t):
         self.add_optimizer(EarlyOptimizer(DEFAULT_OPTIMIZATION_EARLY_MATURITIES, log_dir=self.log_dir))
         self.analyzer = InstructionAnalyzer(DEFAULT_ANALYZER_MATURITIES, log_dir=self.log_dir)
 
-    def func(self, blk: mblock_t, ins: minsn_t) -> bool:
+    def func(self, blk: 'mblock_t', ins: 'minsn_t', optflags: int) ->int:
         self.log_info_on_input(blk, ins)
         try:
             modified = self.optimize(blk, ins)
@@ -103,11 +101,9 @@ class InstructionOptimizerManager(optinsn_t):
 
             return modified
         except RuntimeError as e:
-            optimizer_logger.error("RuntimeError while optimizing ins {0} with {1}: {2}"
-                                   .format(format_minsn_t(ins), self._last_optimizer_tried, e))
+            optimizer_logger.error("RuntimeError while optimizing ins {0} with {1}: {2}".format(format_minsn_t(ins), self._last_optimizer_tried, e))
         except D810Exception as e:
-            optimizer_logger.error("D810Exception while optimizing ins {0} with {1}: {2}"
-                                   .format(format_minsn_t(ins), self._last_optimizer_tried, e))
+            optimizer_logger.error("D810Exception while optimizing ins {0} with {1}: {2}".format(format_minsn_t(ins), self._last_optimizer_tried, e))
         return False
 
     def reset_rule_usage_statistic(self):
@@ -119,8 +115,7 @@ class InstructionOptimizerManager(optinsn_t):
     def show_rule_usage_statistic(self):
         for optimizer_name, optimizer_nb_match in self.optimizer_usage_info.items():
             if optimizer_nb_match > 0:
-                main_logger.info("Instruction optimizer '{0}' has been used {1} times"
-                                 .format(optimizer_name, optimizer_nb_match))
+                main_logger.info("Instruction optimizer '{0}' has been used {1} times".format(optimizer_name, optimizer_nb_match))
         for ins_optimizer in self.instruction_optimizers:
             ins_optimizer.show_rule_usage_statistic()
 
@@ -131,8 +126,7 @@ class InstructionOptimizerManager(optinsn_t):
 
         if (mba is not None) and (mba.maturity != self.current_maturity):
             self.current_maturity = mba.maturity
-            main_logger.debug("Instruction optimization function called at maturity: {0}"
-                              .format(maturity_to_string(self.current_maturity)))
+            main_logger.debug("Instruction optimization function called at maturity: {0}".format(maturity_to_string(self.current_maturity)))
             self.analyzer.set_maturity(self.current_maturity)
             self.current_blk_serial = None
 
@@ -169,11 +163,9 @@ class InstructionOptimizerManager(optinsn_t):
             if new_ins is not None:
                 if not check_ins_mop_size_are_ok(new_ins):
                     if check_ins_mop_size_are_ok(ins):
-                        main_logger.error("Invalid optimized instruction: {0} (original was {1})".format(
-                            format_minsn_t(new_ins), format_minsn_t(ins)))
+                        main_logger.error("Invalid optimized instruction: {0} (original was {1})".format(format_minsn_t(new_ins), format_minsn_t(ins)))
                     else:
-                        main_logger.error("Invalid original instruction : {0} (original was {1})".format(
-                            format_minsn_t(new_ins), format_minsn_t(ins)))
+                        main_logger.error("Invalid original instruction : {0} (original was {1})".format(format_minsn_t(new_ins), format_minsn_t(ins)))
                 else:
                     ins.swap(new_ins)
                     self.optimizer_usage_info[ins_optimizer.name] += 1
@@ -221,8 +213,7 @@ class BlockOptimizerManager(optblock_t):
         for rule_name, rule_nb_patch_list in self.cfg_rules_usage_info.items():
             nb_use = len(rule_nb_patch_list)
             if nb_use > 0:
-                main_logger.info("BlkRule '{0}' has been used {1} times for a total of {2} patches"
-                                 .format(rule_name, nb_use, sum(rule_nb_patch_list)))
+                main_logger.info("BlkRule '{0}' has been used {1} times for a total of {2} patches".format(rule_name, nb_use, sum(rule_nb_patch_list)))
 
     def log_info_on_input(self, blk: mblock_t):
         if blk is None:

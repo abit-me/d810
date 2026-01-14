@@ -1,22 +1,14 @@
 import logging
 import idaapi
-from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
-from d810.optimizers.flow.flattening.generic_dispatcher_collector import GenericDispatcherCollector
 from d810.optimizers.flow.flattening.generic_dispatcher_unflattening_rule import GenericDispatcherUnflatteningRule
-from d810.optimizers.flow.flattening.tigress_indirect_dispatcher_info import TigressIndirectDispatcherInfo
+from d810.optimizers.flow.flattening.tigress_indirect_dispatcher_collector import TigressIndirectDispatcherCollector
 from ida_hexrays import *
 
-from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, AND_TABLE
-from d810.hexrays.mop_tracker import MopTracker, MopHistory
+from d810.helper.hexrays_helpers import AND_TABLE
+from d810.mop.mop_tracker import MopTracker, MopHistory
 
 unflat_logger = logging.getLogger('D810.unflat')
 FLATTENING_JUMP_OPCODES = [m_jtbl]
-
-class TigressIndirectDispatcherCollector(GenericDispatcherCollector):
-    DISPATCHER_CLASS = TigressIndirectDispatcherInfo
-    DEFAULT_DISPATCHER_MIN_INTERNAL_BLOCK = 0
-    DEFAULT_DISPATCHER_MIN_EXIT_BLOCK = 0
-    DEFAULT_DISPATCHER_MIN_COMPARISON_VALUE = 0
 
 
 class LabelTableInfo(object):
@@ -53,9 +45,7 @@ class TigressIndirectUnflattener(GenericDispatcherUnflatteningRule):
         super().configure(kwargs)
         if "goto_table_info" in self.config.keys():
             for ea_str, table_info in self.config["goto_table_info"].items():
-                self.goto_table_info[int(ea_str, 16)] = LabelTableInfo(sp_offset=int(table_info["stack_table_offset"], 16),
-                                                                       mem_offset=int(table_info["table_address"], 16),
-                                                                       nb_elt=table_info["table_nb_elt"])
+                self.goto_table_info[int(ea_str, 16)] = LabelTableInfo(sp_offset=int(table_info["stack_table_offset"], 16), mem_offset=int(table_info["table_address"], 16), nb_elt=table_info["table_nb_elt"])
 
     def check_if_rule_should_be_used(self, blk: mblock_t):
         if not super().check_if_rule_should_be_used(blk):

@@ -28,9 +28,7 @@ class GenericDispatcherCollector(minsn_visitor_t):
             self.dispatcher_min_comparison_value = kwargs["min_dispatcher_comparison_value"]
 
     def specific_checks(self, disp_info: GenericDispatcherInfo) -> bool:
-        unflat_logger.debug("DispatcherInfo {0} : {1} internals, {2} exits, {3} comparison"
-                            .format(self.blk.serial, len(disp_info.dispatcher_internal_blocks),
-                                    len(disp_info.dispatcher_exit_blocks), len(set(disp_info.comparison_values))))
+        unflat_logger.debug("DispatcherInfo {0} : {1} internals, {2} exits, {3} comparison".format(self.blk.serial, len(disp_info.dispatcher_internal_blocks), len(disp_info.dispatcher_exit_blocks), len(set(disp_info.comparison_values))))
         if len(disp_info.dispatcher_internal_blocks) < self.dispatcher_min_internal_block:
             return False
         if len(disp_info.dispatcher_exit_blocks) < self.dispatcher_min_exit_block:

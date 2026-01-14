@@ -11,7 +11,7 @@ def reload_all_modules():
         manager_info = json.load(f)
 
     for module_name in manager_info["module_list"]:
-        if module_name == "d810.ida_ui" and not is_idaq():
+        if module_name == "d810.ui.ida_ui" and not is_idaq():
             continue
         # print("require module_name: " + module_name)
         idaapi.require(module_name)

@@ -1,10 +1,10 @@
 import logging
 from d810.optimizers.flow.jumps.jump_optimization_rule import JumpOptimizationRule
 from ida_hexrays import *
-from d810.expr.ast import mop_to_ast
-from d810.hexrays.hexrays_formatters import format_minsn_t
+from d810.ast.ast import mop_to_ast
+from d810.format.hexrays_formatters import format_minsn_t
 from d810.optimizers.flow.flow_optimization_rule import FlowOptimizationRule
-from d810.hexrays.cfg_util import make_2way_block_goto, is_conditional_jump, change_2way_block_conditional_successor
+from d810.helper.cfg_util import make_2way_block_goto, is_conditional_jump, change_2way_block_conditional_successor
 
 
 logger = logging.getLogger("D810.branch_fixer")
@@ -53,6 +53,5 @@ class JumpFixer(FlowOptimizationRule):
                         blk.insert_into_block(new_ins, blk.tail)
                         return True
             except RuntimeError as e:
-                optimizer_logger.error("Error during rule {0} for instruction {1}: {2}"
-                                       .format(rule, format_minsn_t(blk.tail), e))
+                optimizer_logger.error("Error during rule {0} for instruction {1}: {2}".format(rule, format_minsn_t(blk.tail), e))
         return False

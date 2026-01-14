@@ -4,7 +4,7 @@ import json
 
 class D810Configuration(object):
     def __init__(self):
-        file_path = os.path.dirname(os.path.realpath(__file__)) + "/conf"
+        file_path = os.path.dirname(os.path.realpath(__file__)) + "/../conf"
         self.config_dir = os.path.abspath(file_path)
         self.config_file = os.path.join(self.config_dir, "options.json")
         with open(self.config_file, "r") as fp:

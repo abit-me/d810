@@ -1,8 +1,8 @@
 import logging
 import os
 from typing import List, Optional
-from d810.configuration import D810Configuration, ProjectConfiguration
-from d810.log import D810_LOG_DIR_NAME
+from d810.project.configuration import D810Configuration, ProjectConfiguration
+from d810.log.log import D810_LOG_DIR_NAME
 
 logger = logging.getLogger('D810')
 

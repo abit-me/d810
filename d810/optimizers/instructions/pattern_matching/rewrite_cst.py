@@ -1,7 +1,7 @@
 from ida_hexrays import *
-from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.ast.ast import AstLeaf, AstConstant, AstNode
 from d810.optimizers.instructions.pattern_matching.pattern_optimizer import PatternMatchingRule
-from d810.hexrays.hexrays_helpers import equal_bnot_cst, SUB_TABLE, AND_TABLE, equal_bnot_mop
+from d810.helper.hexrays_helpers import equal_bnot_cst, SUB_TABLE, AND_TABLE, equal_bnot_mop
 
 
 class CstSimplificationRule1(PatternMatchingRule):
@@ -386,10 +386,8 @@ class CstSimplificationRule20(PatternMatchingRule):
             return False
         if candidate["c_and_1"].value & candidate["c_and_2"].value != 0:
             return False
-        candidate.add_constant_leaf("c_and_res", candidate["c_and_1"].value ^ candidate["c_and_2"].value,
-                                    candidate["c_and_1"].size)
-        candidate.add_constant_leaf("c_xor_res", candidate["c_and_1"].value ^ candidate["c_xor"].value,
-                                    candidate["c_and_1"].size)
+        candidate.add_constant_leaf("c_and_res", candidate["c_and_1"].value ^ candidate["c_and_2"].value, candidate["c_and_1"].size)
+        candidate.add_constant_leaf("c_xor_res", candidate["c_and_1"].value ^ candidate["c_xor"].value, candidate["c_and_1"].size)
         return True
 
 
@@ -413,8 +411,7 @@ class CstSimplificationRule21(PatternMatchingRule):
             return False
         if candidate["c_xor_1"].mop.nnn.value & candidate["c_xor_2"].mop.nnn.value != 0:
             return False
-        candidate.add_constant_leaf("c_xor_res", candidate["c_xor_1"].value ^ candidate["c_xor_2"].value,
-                                    candidate["c_xor_1"].size)
+        candidate.add_constant_leaf("c_xor_res", candidate["c_xor_1"].value ^ candidate["c_xor_2"].value, candidate["c_xor_1"].size)
         return True
 
 
@@ -442,6 +439,5 @@ class CstSimplificationRule22(PatternMatchingRule):
             return False
         if candidate["c_xor_1"].mop.nnn.value & candidate["bnot_c_and"].mop.nnn.value != 0:
             return False
-        candidate.add_constant_leaf("c_xor_res", candidate["c_xor_1"].value ^ candidate["c_xor_2"].value ^ candidate["bnot_c_and"].value,
-                                    candidate["c_xor_1"].size)
+        candidate.add_constant_leaf("c_xor_res", candidate["c_xor_1"].value ^ candidate["c_xor_2"].value ^ candidate["bnot_c_and"].value, candidate["c_xor_1"].size)
         return True

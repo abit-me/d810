@@ -1,12 +1,12 @@
 import logging
 
-from d810.errors import UnresolvedMopException, EmulationException, WritableMemoryReadException, \
+from d810.error.errors import UnresolvedMopException, EmulationException, WritableMemoryReadException, \
     EmulationIndirectJumpException
-from d810.expr.arithmetic_util import *
-from d810.expr.microcode_environment import MicroCodeEnvironment
-from d810.hexrays.cfg_util import get_block_serials_by_address
-from d810.hexrays.hexrays_formatters import format_mop_t, format_minsn_t, mop_type_to_string, opcode_to_string
-from d810.hexrays.hexrays_helpers import AND_TABLE, CONTROL_FLOW_OPCODES, CONDITIONAL_JUMP_OPCODES
+from d810.helper.arithmetic_util import *
+from d810.microcode.microcode_environment import MicroCodeEnvironment
+from d810.helper.cfg_util import get_block_serials_by_address
+from d810.format.hexrays_formatters import format_mop_t, format_minsn_t, mop_type_to_string, opcode_to_string
+from d810.helper.hexrays_helpers import AND_TABLE, CONTROL_FLOW_OPCODES, CONDITIONAL_JUMP_OPCODES
 from ida_hexrays import *
 from idaapi import getseg, get_qword, SEGPERM_WRITE
 
@@ -140,15 +140,13 @@ class MicroCodeInterpreter(object):
         elif ins.opcode == m_setp:
             res = get_parity_flag(self.eval(ins.l, environment), self.eval(ins.r, environment), ins.l.size)
             return res & res_mask
-        raise EmulationException("Unsupported instruction opcode '{0}': '{1}'"
-                                 .format(opcode_to_string(ins.opcode), format_minsn_t(ins)))
+        raise EmulationException("Unsupported instruction opcode '{0}': '{1}'".format(opcode_to_string(ins.opcode), format_minsn_t(ins)))
 
     @staticmethod
     def _get_blk_serial(mop: mop_t) -> int:
         if mop.t == mop_b:
             return mop.b
-        raise EmulationException("Get block serial with an unsupported mop type '{0}': '{1}'"
-                                 .format(mop_type_to_string(mop.t), format_mop_t(mop)))
+        raise EmulationException("Get block serial with an unsupported mop type '{0}': '{1}'".format(mop_type_to_string(mop.t), format_mop_t(mop)))
 
     def _eval_conditional_jump(self, ins: minsn_t, environment: MicroCodeEnvironment) -> Union[None, int]:
         if ins.opcode not in CONDITIONAL_JUMP_OPCODES:
@@ -198,8 +196,7 @@ class MicroCodeInterpreter(object):
             return False
         cur_blk = environment.cur_blk
         if cur_blk is None:
-            raise EmulationException("Can't evaluate control flow instruction with null block:  '{0}'"
-                                     .format(format_minsn_t(ins)))
+            raise EmulationException("Can't evaluate control flow instruction with null block:  '{0}'".format(format_minsn_t(ins)))
 
         next_blk_serial = self._eval_conditional_jump(ins, environment)
         if next_blk_serial is not None:
@@ -224,13 +221,10 @@ class MicroCodeInterpreter(object):
             ijmp_dest_ea = self.eval(ins.d, environment)
             dest_block_serials = get_block_serials_by_address(environment.cur_blk.mba, ijmp_dest_ea)
             if len(dest_block_serials) == 0:
-                raise EmulationIndirectJumpException("No blocks found at address {0:x}".format(ijmp_dest_ea),
-                                                     ijmp_dest_ea, dest_block_serials)
+                raise EmulationIndirectJumpException("No blocks found at address {0:x}".format(ijmp_dest_ea), ijmp_dest_ea, dest_block_serials)
 
             if len(dest_block_serials) > 1:
-                raise EmulationIndirectJumpException("Multiple blocks at address {0:x}: {1}".format(ijmp_dest_ea,
-                                                                                                    dest_block_serials),
-                                                     ijmp_dest_ea, dest_block_serials)
+                raise EmulationIndirectJumpException("Multiple blocks at address {0:x}: {1}".format(ijmp_dest_ea, dest_block_serials), ijmp_dest_ea, dest_block_serials)
             next_blk_serial = dest_block_serials[0]
 
         if next_blk_serial is None:
@@ -278,9 +272,9 @@ class MicroCodeInterpreter(object):
                     raise WritableMemoryReadException("ldx {0:x} (writable -> return None)".format(load_address))
                 else:
                     memory_value = get_qword(load_address)
-                    emulator_log.debug("ldx {0:x} (non writable -> return {1:x})"
-                                       .format(load_address, memory_value & res_mask))
+                    emulator_log.debug("ldx {0:x} (non writable -> return {1:x})".format(load_address, memory_value & res_mask))
                     return memory_value & res_mask
+        return None
 
     def _eval_store(self, ins: minsn_t, environment: MicroCodeEnvironment) -> Union[None, int]:
         # TODO: implement
@@ -306,8 +300,7 @@ class MicroCodeInterpreter(object):
             elif mop.a.t == mop_S:
                 emulator_log.debug("Reading a mop_a '{0}' -> {1:x}".format(format_mop_t(mop), mop.a.s.off))
                 return mop.a.s.off
-            raise UnresolvedMopException("Calling get_cst with unsupported mop type {0} - {1}: '{2}'"
-                                         .format(mop.t, mop.a.t, format_mop_t(mop)))
+            raise UnresolvedMopException("Calling get_cst with unsupported mop type {0} - {1}: '{2}'".format(mop.t, mop.a.t, format_mop_t(mop)))
         elif mop.t == mop_v:
             mem_seg = getseg(mop.g)
             seg_perm = mem_seg.perm
@@ -318,11 +311,9 @@ class MicroCodeInterpreter(object):
                 memory_value = get_qword(mop.g)
                 emulator_log.debug("Reading a mop_v {0:x} (non writable -> return {1:x})".format(mop.g, memory_value))
                 return mop.g
-        raise EmulationException("Unsupported mop type '{0}': '{1}'"
-                                 .format(mop_type_to_string(mop.t), format_mop_t(mop)))
+        raise EmulationException("Unsupported mop type '{0}': '{1}'".format(mop_type_to_string(mop.t), format_mop_t(mop)))
 
-    def eval_instruction(self, blk: mblock_t, ins: minsn_t, environment: Union[None, MicroCodeEnvironment] = None,
-                         raise_exception: bool = False) -> bool:
+    def eval_instruction(self, blk: mblock_t, ins: minsn_t, environment: Union[None, MicroCodeEnvironment] = None, raise_exception: bool = False) -> bool:
         try:
             if environment is None:
                 environment = self.global_environment
@@ -341,8 +332,7 @@ class MicroCodeInterpreter(object):
                 raise e
         return False
 
-    def eval_mop(self, mop: mop_t, environment: Union[None, MicroCodeEnvironment] = None,
-                 raise_exception: bool = False) -> Union[None, int]:
+    def eval_mop(self, mop: mop_t, environment: Union[None, MicroCodeEnvironment] = None, raise_exception: bool = False) -> Union[None, int]:
         try:
             if environment is None:
                 environment = self.global_environment

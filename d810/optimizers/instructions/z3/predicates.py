@@ -1,7 +1,7 @@
 from ida_hexrays import *
 from d810.optimizers.instructions.z3.z3_optimizer import Z3Rule
-from d810.expr.ast import AstLeaf, AstConstant, AstNode
-from d810.expr.z3_util import z3_check_mop_equality, z3_check_mop_inequality
+from d810.ast.ast import AstLeaf, AstConstant, AstNode
+from d810.helper.z3_util import z3_check_mop_equality, z3_check_mop_inequality
 
 
 class Z3setzRuleGeneric(Z3Rule):
@@ -40,8 +40,7 @@ class Z3setnzRuleGeneric(Z3Rule):
 
 class Z3lnotRuleGeneric(Z3Rule):
     DESCRIPTION = "Check with Z3 if a m_lnot check is always True or False"
-    PATTERN = AstNode(m_lnot,
-                      AstLeaf("x_0"))
+    PATTERN = AstNode(m_lnot, AstLeaf("x_0"))
     REPLACEMENT_PATTERN = AstNode(m_mov, AstConstant("val_res"))
 
     def check_candidate(self, candidate):

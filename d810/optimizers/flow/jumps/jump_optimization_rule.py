@@ -1,6 +1,6 @@
-from d810.hexrays.hexrays_formatters import opcode_to_string
+from d810.format.hexrays_formatters import opcode_to_string
 from d810.optimizers.instructions.instruction_optimizer import InstructionOptimizationRule
-from d810.expr.ast import AstNode
+from d810.ast.ast import AstNode
 from d810.optimizers.instructions.pattern_matching.pattern_matching_util import ast_generator
 from ida_hexrays import *
 
@@ -105,8 +105,7 @@ class JumpOptimizationRule(InstructionOptimizationRule):
         new_ins = self.create_new_ins(original_ins, new_left_mop, new_right_mop, new_dst_mop)
         return new_ins
 
-    def create_new_ins(self, original_ins: minsn_t, new_left_mop: mop_t,
-                       new_right_mop: Union[None, mop_t] = None, new_dst_mop: Union[None, mop_t] = None) -> minsn_t:
+    def create_new_ins(self, original_ins: minsn_t, new_left_mop: mop_t, new_right_mop: Union[None, mop_t] = None, new_dst_mop: Union[None, mop_t] = None) -> minsn_t:
         new_ins = minsn_t(original_ins)
         new_ins.opcode = self.REPLACEMENT_OPCODE
         if self.REPLACEMENT_OPCODE == m_goto:

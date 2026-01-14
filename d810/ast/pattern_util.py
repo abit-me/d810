@@ -1,4 +1,4 @@
-from d810.expr.ast import AstNode, AstLeaf
+from d810.ast.ast import AstNode, AstLeaf
 
 
 def get_possible_patterns(ast, min_nb_use=2, ref_ast_info_by_index=None, max_nb_pattern=64):

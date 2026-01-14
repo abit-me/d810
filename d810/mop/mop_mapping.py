@@ -1,4 +1,4 @@
-from d810.hexrays.hexrays_helpers import get_mop_index, AND_TABLE
+from d810.helper.hexrays_helpers import get_mop_index, AND_TABLE
 from ida_hexrays import *
 
 class MopMapping(object):

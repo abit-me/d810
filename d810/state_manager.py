@@ -2,15 +2,15 @@ import logging
 import os
 
 from typing import TYPE_CHECKING
-from d810.log import configure_loggers, clear_logs, D810_LOG_DIR_NAME
+from d810.log.log import configure_loggers, clear_logs, D810_LOG_DIR_NAME
 
 if TYPE_CHECKING:
     pass
 
-from d810.configuration import D810Configuration
-from d810.module_manager import reload_all_modules
+from d810.project.configuration import D810Configuration
+from d810.project.module_manager import reload_all_modules
 from d810.optimizer_manager import OptimizerManager
-from d810.project_manager import get_project_manager
+from d810.project.project_manager import get_project_manager
 
 # Note that imports are performed directly in the functions so that they are reloaded each time the plugin is restarted
 # This allow to load change code/drop new rules without having to reboot IDA
@@ -50,12 +50,8 @@ class StateManager(object):
         z3_code = self.d810_config.get("generate_z3_code")
         mi_code = self.d810_config.get("dump_intermediate_microcode")
 
-        self.optimizer_manager.configure_instruction_optimizer([rule for rule in self.project_manager.current_ins_rules],
-                                                               generate_z3_code=z3_code,
-                                                               dump_intermediate_microcode=mi_code,
-                                                               **self.project_manager.current_project.additional_configuration)
-        self.optimizer_manager.configure_block_optimizer([rule for rule in self.project_manager.current_blk_rules],
-                                                         **self.project_manager.current_project.additional_configuration)
+        self.optimizer_manager.configure_instruction_optimizer([rule for rule in self.project_manager.current_ins_rules], generate_z3_code=z3_code, dump_intermediate_microcode=mi_code, **self.project_manager.current_project.additional_configuration)
+        self.optimizer_manager.configure_block_optimizer([rule for rule in self.project_manager.current_blk_rules], **self.project_manager.current_project.additional_configuration)
         self.optimizer_manager.reload()
         self.d810_config.set("last_project_index", self.project_manager.current_project_index)
         self.d810_config.save()

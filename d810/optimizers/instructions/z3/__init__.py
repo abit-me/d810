@@ -1,4 +1,4 @@
-from d810.module_manager import get_all_subclasses
+from d810.project.module_manager import get_all_subclasses
 from d810.optimizers.instructions.z3.z3_optimizer import Z3Rule, Z3Optimizer
 from d810.optimizers.instructions.z3.z3_constant_optimization import *
 from d810.optimizers.instructions.z3.predicates import *

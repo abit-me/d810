@@ -5,22 +5,6 @@ tracker_logger = logging.getLogger('D810.tracker')
 emulator_logger = logging.getLogger('D810.emulator')
 
 
-class UnflatteningException(Exception):
-    pass
-
-
-class DispatcherUnflatteningException(UnflatteningException):
-    pass
-
-
-class NotDuplicableFatherException(UnflatteningException):
-    pass
-
-
-class NotResolvableFatherException(UnflatteningException):
-    pass
-
-
 def configure_mop_tracker_log_verbosity(verbose=False):
     tracker_log_level = tracker_logger.getEffectiveLevel()
     emulator_log_level = emulator_logger.getEffectiveLevel()

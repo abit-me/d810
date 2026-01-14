@@ -1,9 +1,9 @@
 import logging
 from ida_hexrays import *
-from d810.hexrays.hexrays_helpers import get_mop_index
-from d810.hexrays.hexrays_formatters import format_minsn_t, opcode_to_string
-from d810.expr.ast import mop_to_ast, minsn_to_ast, AstLeaf, AstNode
-from d810.errors import D810Z3Exception
+from d810.helper.hexrays_helpers import get_mop_index
+from d810.format.hexrays_formatters import format_minsn_t, opcode_to_string
+from d810.ast.ast import mop_to_ast, minsn_to_ast, AstLeaf, AstNode
+from d810.error.errors import D810Z3Exception
 logger = logging.getLogger('D810.plugin')
 z3_file_logger = logging.getLogger('D810.z3_test')
 
@@ -68,8 +68,7 @@ def ast_to_z3_expression(ast: Union[AstNode, AstLeaf], use_bitvecval=False):
     elif ast.opcode == m_mul:
         return (ast_to_z3_expression(ast.left, use_bitvecval)) * (ast_to_z3_expression(ast.right, use_bitvecval))
     elif ast.opcode == m_udiv:
-        return z3.UDiv(ast_to_z3_expression(ast.left, use_bitvecval=True),
-                       ast_to_z3_expression(ast.right, use_bitvecval=True))
+        return z3.UDiv(ast_to_z3_expression(ast.left, use_bitvecval=True), ast_to_z3_expression(ast.right, use_bitvecval=True))
     elif ast.opcode == m_sdiv:
         return (ast_to_z3_expression(ast.left, use_bitvecval)) / (ast_to_z3_expression(ast.right, use_bitvecval))
     elif ast.opcode == m_umod:
@@ -147,7 +146,7 @@ def log_z3_instructions(original_ins: minsn_t, new_ins: minsn_t):
     orig_mba_tree = minsn_to_ast(original_ins)
     new_mba_tree = minsn_to_ast(new_ins)
     if orig_mba_tree is None or new_mba_tree is None:
-        return None
+        return
     orig_leaf_list = orig_mba_tree.get_leaf_list()
     new_leaf_list = new_mba_tree.get_leaf_list()
 

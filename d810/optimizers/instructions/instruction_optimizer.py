@@ -2,13 +2,11 @@ from __future__ import annotations
 import logging
 from ida_hexrays import *
 from d810.optimizers.instructions.instruction_optimization_rule import InstructionOptimizationRule
-from d810.hexrays.hexrays_formatters import format_minsn_t
-from d810.errors import D810Exception
-
+from d810.format.hexrays_formatters import format_minsn_t
+from d810.error.errors import D810Exception
 
 d810_logger = logging.getLogger('D810')
 optimizer_logger = logging.getLogger('D810.optimizer')
-
 
 class InstructionOptimizer(object):
     RULE_CLASSES = []

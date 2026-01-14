@@ -1,10 +1,10 @@
 from __future__ import annotations
 import logging
 from ida_hexrays import *
-from d810.expr.arithmetic_util import unsigned_to_signed, signed_to_unsigned, get_add_cf, get_add_of, get_sub_of, get_parity_flag
-from d810.hexrays.hexrays_helpers import OPCODES_INFO, MBA_RELATED_OPCODES, Z3_SPECIAL_OPERANDS, MINSN_TO_AST_FORBIDDEN_OPCODES, equal_mops_ignore_size, AND_TABLE
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
-from d810.errors import AstEvaluationException
+from d810.helper.arithmetic_util import unsigned_to_signed, signed_to_unsigned, get_add_cf, get_add_of, get_sub_of, get_parity_flag
+from d810.helper.hexrays_helpers import OPCODES_INFO, MBA_RELATED_OPCODES, Z3_SPECIAL_OPERANDS, MINSN_TO_AST_FORBIDDEN_OPCODES, equal_mops_ignore_size, AND_TABLE
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.error.errors import AstEvaluationException
 logger = logging.getLogger('D810')
 
 
@@ -259,12 +259,11 @@ class AstNode(dict):
         elif nb_operands == 1:
             return "AstNode(m_{0}, {1})".format(OPCODES_INFO[self.opcode]["name"], self.left.get_pattern())
         elif nb_operands == 2:
-            return "AstNode(m_{0}, {1}, {2})" \
-                .format(OPCODES_INFO[self.opcode]["name"], self.left.get_pattern(), self.right.get_pattern())
+            return "AstNode(m_{0}, {1}, {2})".format(OPCODES_INFO[self.opcode]["name"], self.left.get_pattern(), self.right.get_pattern())
+        return ""
 
     def evaluate_with_leaf_info(self, leafs_info, leafs_value):
-        dict_index_to_value = {leaf_info.ast.ast_index: leaf_value for leaf_info, leaf_value in
-                               zip(leafs_info, leafs_value)}
+        dict_index_to_value = {leaf_info.ast.ast_index: leaf_value for leaf_info, leaf_value in zip(leafs_info, leafs_value)}
         res = self.evaluate(dict_index_to_value)
         return res
 
@@ -316,12 +315,10 @@ class AstNode(dict):
             res_signed = left_value_signed >> self.right.evaluate(dict_index_to_value)
             return signed_to_unsigned(res_signed, self.dest_size) & res_mask
         elif self.opcode == m_cfadd:
-            tmp = get_add_cf(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value),
-                             self.left.dest_size)
+            tmp = get_add_cf(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value), self.left.dest_size)
             return tmp & res_mask
         elif self.opcode == m_ofadd:
-            tmp = get_add_of(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value),
-                             self.left.dest_size)
+            tmp = get_add_of(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value), self.left.dest_size)
             return tmp & res_mask
         elif self.opcode == m_sets:
             left_value_signed = unsigned_to_signed(self.left.evaluate(dict_index_to_value), self.left.dest_size)
@@ -371,8 +368,7 @@ class AstNode(dict):
             res = 1 if left_value_signed <= right_value_signed else 0
             return res & res_mask
         elif self.opcode == m_setp:
-            res = get_parity_flag(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value),
-                                  self.left.dest_size)
+            res = get_parity_flag(self.left.evaluate(dict_index_to_value), self.right.evaluate(dict_index_to_value), self.left.dest_size)
             return res & res_mask
         else:
             raise AstEvaluationException("Can't evaluate opcode: {0}".format(self.opcode))
@@ -517,10 +513,10 @@ class AstLeaf(object):
             return "AstLeaf('x_{0}')".format(self.ast_index)
         if self.name is not None:
             return "AstLeaf('{0}')".format(self.name)
+        return None
 
     def evaluate_with_leaf_info(self, leafs_info, leafs_value):
-        dict_index_to_value = {leaf_info.ast.ast_index: leaf_value for leaf_info, leaf_value in
-                               zip(leafs_info, leafs_value)}
+        dict_index_to_value = {leaf_info.ast.ast_index: leaf_value for leaf_info, leaf_value in zip(leafs_info, leafs_value)}
         res = self.evaluate(dict_index_to_value)
         return res
 

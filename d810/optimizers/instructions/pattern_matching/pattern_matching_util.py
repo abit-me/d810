@@ -1,4 +1,4 @@
-from d810.expr.ast import *
+from d810.ast.ast import *
 import itertools
 
 def get_ast_variations_with_add_sub(opcode, left, right):

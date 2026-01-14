@@ -2,12 +2,12 @@ from __future__ import annotations
 import logging
 from typing import Dict
 
-from d810.hexrays.mop_history import MopHistory
+from d810.mop.mop_history import MopHistory
 from ida_hexrays import *
-from d810.hexrays.cfg_util import change_1way_block_successor, change_2way_block_conditional_successor, duplicate_block
-from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays.hexrays_helpers import equal_mops_ignore_size, get_mop_index, get_blk_index
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t
+from d810.helper.cfg_util import change_1way_block_successor, change_2way_block_conditional_successor, duplicate_block
+from d810.hook.hexrays_hooks import InstructionDefUseCollector
+from d810.helper.hexrays_helpers import equal_mops_ignore_size, get_mop_index, get_blk_index
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
 
 # This module can be use to find the instruction that define the value of a mop. Basically, you:
 # 1 - Create a MopTracker object with the list of mops to search
@@ -35,8 +35,7 @@ def get_standard_and_memory_mop_lists(mop_in: mop_t) -> Tuple[List[mop_t], List[
         mop_in.d.for_all_ops(ins_mop_info)
         return remove_segment_registers(ins_mop_info.unresolved_ins_mops), ins_mop_info.memory_unresolved_ins_mops
     else:
-        logger.warning("Calling get_standard_and_memory_mop_lists with unsupported mop type {0}: '{1}'"
-                       .format(mop_in.t, format_mop_t(mop_in)))
+        logger.warning("Calling get_standard_and_memory_mop_lists with unsupported mop type {0}: '{1}'".format(mop_in.t, format_mop_t(mop_in)))
         return [], []
 
 
@@ -79,12 +78,10 @@ class MopTracker(object):
         cur_mop_tracker_nb_path += 1
         return new_mop_tracker
 
-    def search_backward(self, blk: mblock_t, ins: minsn_t, avoid_list=None, must_use_pred=None,
-                        stop_at_first_duplication=False) -> List[MopHistory]:
+    def search_backward(self, blk: mblock_t, ins: minsn_t, avoid_list=None, must_use_pred=None, stop_at_first_duplication=False) -> List[MopHistory]:
         logger.debug("Searching backward (reg): {0}".format([format_mop_t(x) for x in self._unresolved_mops]))
         logger.debug("Searching backward (mem): {0}".format([format_mop_t(x) for x in self._memory_unresolved_mops]))
-        logger.debug("Searching backward (cst): {0}"
-                     .format(["{0}: {1:x}".format(format_mop_t(x[0]), x[1]) for x in self.constant_mops]))
+        logger.debug("Searching backward (cst): {0}".format(["{0}: {1:x}".format(format_mop_t(x[0]), x[1]) for x in self.constant_mops]))
         self.mba = blk.mba
         self.avoid_list = avoid_list if avoid_list else []
         blk_with_multiple_pred = self.search_until_multiple_predecessor(blk, ins)
@@ -120,8 +117,7 @@ class MopTracker(object):
         else:
             for blk_pred_serial in blk_with_multiple_pred.predset:
                 new_tracker = self.get_copy()
-                possible_histories += new_tracker.search_backward(self.mba.get_mblock(blk_pred_serial), None,
-                                                                  self.avoid_list, must_use_pred)
+                possible_histories += new_tracker.search_backward(self.mba.get_mblock(blk_pred_serial), None, self.avoid_list, must_use_pred)
         return possible_histories
 
     def search_until_multiple_predecessor(self, blk: mblock_t, ins: Union[None, minsn_t] = None) -> Union[None, mblock_t]:
@@ -262,14 +258,12 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
     block_to_duplicate, pred_dict = get_block_with_multiple_predecessors(var_histories)
     if block_to_duplicate is None:
         return nb_duplication, nb_change
-    logger.debug("Block to duplicate found: {0} with {1} successors"
-                 .format(block_to_duplicate.serial, block_to_duplicate.nsucc()))
+    logger.debug("Block to duplicate found: {0} with {1} successors".format(block_to_duplicate.serial, block_to_duplicate.nsucc()))
     i = 0
     for pred_serial, pred_history_group in pred_dict.items():
         # We do not duplicate first group
         if i >= 1:
-            logger.debug("  Before {0}: {1}"
-                         .format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
+            logger.debug("  Before {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
             pred_block = mba.get_mblock(pred_serial)
             duplicated_blk_jmp, duplicated_blk_default = duplicate_block(block_to_duplicate)
             nb_duplication += 1 if duplicated_blk_jmp is not None else 0
@@ -284,8 +278,7 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
                     nb_change += 1
                 else:
                     logger.warning(" not sure this is suppose to happen")
-                    change_1way_block_successor(pred_block.mba.get_mblock(pred_block.serial + 1),
-                                                duplicated_blk_jmp.serial)
+                    change_1way_block_successor(pred_block.mba.get_mblock(pred_block.serial + 1), duplicated_blk_jmp.serial)
                     nb_change += 1
 
             block_to_duplicate_default_successor = mba.get_mblock(block_to_duplicate.serial + 1)
@@ -299,8 +292,7 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
                         if original_jump_block_successor.serial == block_to_duplicate_default_successor.serial:
                             var_history.insert_block_in_path(duplicated_blk_default, index_jump_block + 1)
         i += 1
-        logger.debug("  After {0}: {1}"
-                     .format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
+        logger.debug("  After {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
     for i, var_history in enumerate(var_histories):
         logger.debug(" internal_pass_end.{0}: {1}".format(i, var_history.block_serial_path))
     return nb_duplication, nb_change

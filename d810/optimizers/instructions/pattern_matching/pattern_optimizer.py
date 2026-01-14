@@ -3,8 +3,8 @@ from d810.optimizers.instructions.pattern_matching import PatternMatchingRule
 from ida_hexrays import *
 from typing import List, Union
 from d810.optimizers.instructions.instruction_optimizer import InstructionOptimizer, InstructionOptimizationRule
-from d810.expr.ast import minsn_to_ast, AstNode, AstLeaf
-from d810.hexrays.hexrays_formatters import format_minsn_t
+from d810.ast.ast import minsn_to_ast, AstNode
+from d810.format.hexrays_formatters import format_minsn_t
 
 optimizer_logger = logging.getLogger('D810.optimizer')
 pattern_search_logger = logging.getLogger('D810.pattern_search')
@@ -146,8 +146,7 @@ class PatternOptimizer(InstructionOptimizer):
                     optimizer_logger.info("  new : {0}".format(format_minsn_t(new_ins)))
                     return new_ins
             except RuntimeError as e:
-                optimizer_logger.error("Error during rule {0} for instruction {1}: {2}"
-                                       .format(rule_pattern_info.rule, format_minsn_t(ins), e))
+                optimizer_logger.error("Error during rule {0} for instruction {1}: {2}".format(rule_pattern_info.rule, format_minsn_t(ins), e))
         return None
 
 

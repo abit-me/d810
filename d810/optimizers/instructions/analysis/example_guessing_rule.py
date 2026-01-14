@@ -1,9 +1,9 @@
 import os
-from d810.expr.ast import minsn_to_ast
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string
+from d810.ast.ast import minsn_to_ast
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_t, maturity_to_string
 from d810.optimizers.optimization_rule import DEFAULT_INSTRUCTION_MATURITIES
 from d810.optimizers.instructions.analysis.instruction_analysis_rule import InstructionAnalysisRule
-from d810.optimizers.instructions.analysis.pattern_util import get_possible_patterns
+from d810.ast.pattern_util import get_possible_patterns
 
 
 class ExampleGuessingRule(InstructionAnalysisRule):

@@ -1,5 +1,5 @@
 from d810.optimizers.instructions.generic_pattern_rule import GenericPatternRule
-from d810.expr.ast import *
+from d810.ast.ast import *
 from d810.optimizers.instructions.pattern_matching.pattern_matching_util import ast_generator
 
 pattern_matching_logger = logging.getLogger('D810.pattern_matching')

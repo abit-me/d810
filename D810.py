@@ -1,4 +1,3 @@
-import os
 import idaapi
 import ida_hexrays
 import ida_kernwin
@@ -23,7 +22,7 @@ class D810Plugin(idaapi.plugin_t):
         self.initialized = False
 
     def start_plugin(self):
-        from d810.ida_ui import D810GUI
+        from d810.ui.ida_ui import D810GUI
         self.state_manager.start()
         self.gui = D810GUI()
         self.gui.show_windows()

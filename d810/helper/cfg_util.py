@@ -1,9 +1,10 @@
 import logging
+
+from d810.format.block_printer import block_printer
 from ida_hexrays import *
 from typing import List, Tuple
-from d810.errors import ControlFlowException
-from d810.hexrays.hexrays_helpers import CONDITIONAL_JUMP_OPCODES
-from d810.hexrays.hexrays_formatters import block_printer
+from d810.error.errors import ControlFlowException
+from d810.helper.hexrays_helpers import CONDITIONAL_JUMP_OPCODES
 
 
 helper_logger = logging.getLogger('D810.helper')
@@ -15,8 +16,7 @@ def log_block_info(blk: mblock_t, logger_func=helper_logger.info):
         return
     vp = block_printer()
     blk._print(vp)
-    logger_func("Block {0} with successors {1} and predecessors {2}:\n{3}"
-                .format(blk.serial, [x for x in blk.succset], [x for x in blk.predset], vp.get_block_mc()))
+    logger_func("Block {0} with successors {1} and predecessors {2}:\n{3}".format(blk.serial, [x for x in blk.succset], [x for x in blk.predset], vp.get_block_mc()))
 
 
 def insert_goto_instruction(blk: mblock_t, goto_blk_serial: int, nop_previous_instruction=False):
@@ -205,8 +205,7 @@ def update_blk_successor(blk: mblock_t, old_successor_serial: int, new_successor
         change_1way_block_successor(blk, new_successor_serial)
     elif blk.nsucc() == 2:
         if old_successor_serial == blk.serial + 1:
-            helper_logger.info("Can't update direct block successor: {0} - {1} - {2}"
-                               .format(blk.serial, old_successor_serial, new_successor_serial))
+            helper_logger.info("Can't update direct block successor: {0} - {1} - {2}".format(blk.serial, old_successor_serial, new_successor_serial))
             return 0
         else:
             change_2way_block_conditional_successor(blk, new_successor_serial)
@@ -374,9 +373,7 @@ def duplicate_block(block_to_duplicate: mblock_t) -> Tuple[mblock_t, mblock_t]:
         block_to_duplicate_default_successor = mba.get_mblock(block_to_duplicate.serial + 1)
         duplicated_blk_default = insert_nop_blk(duplicated_blk)
         change_1way_block_successor(duplicated_blk_default, block_to_duplicate.serial + 1)
-        helper_logger.debug("  {0} is conditional, so created a default child {1} for {2} which goto {3}"
-                            .format(block_to_duplicate.serial, duplicated_blk_default.serial, duplicated_blk.serial,
-                                    block_to_duplicate_default_successor.serial))
+        helper_logger.debug("  {0} is conditional, so created a default child {1} for {2} which goto {3}".format(block_to_duplicate.serial, duplicated_blk_default.serial, duplicated_blk.serial, block_to_duplicate_default_successor.serial))
     elif duplicated_blk.nsucc() == 1:
         helper_logger.debug("  Making {0} goto {1}".format(duplicated_blk.serial, block_to_duplicate.succset[0]))
         change_1way_block_successor(duplicated_blk, block_to_duplicate.succset[0])
@@ -467,14 +464,12 @@ def ensure_child_has_an_unconditional_father(father_block: mblock_t, child_block
         return 0
 
     if father_block.tail.d.b == child_block.serial:
-        helper_logger.debug("Father {0} is a conditional jump to child {1}, creating a new father"
-                            .format(father_block.serial, child_block.serial))
+        helper_logger.debug("Father {0} is a conditional jump to child {1}, creating a new father".format(father_block.serial, child_block.serial))
         new_father_block = insert_nop_blk(mba.get_mblock(mba.qty - 2))
         change_1way_block_successor(new_father_block, child_block.serial)
         change_2way_block_conditional_successor(father_block, new_father_block.serial)
     else:
-        helper_logger.info("Father {0} is a conditional jump to child {1} (default child), creating a new father"
-                           .format(father_block.serial, child_block.serial))
+        helper_logger.info("Father {0} is a conditional jump to child {1} (default child), creating a new father".format(father_block.serial, child_block.serial))
         new_father_block = insert_nop_blk(father_block)
         change_1way_block_successor(new_father_block, child_block.serial)
     return 1

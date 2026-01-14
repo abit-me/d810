@@ -1,5 +1,5 @@
 from ida_hexrays import *
-from d810.expr.ast import AstLeaf, AstConstant, AstNode
+from d810.ast.ast import AstLeaf, AstConstant, AstNode
 from d810.optimizers.flow.jumps.jump_fixer import JumpOptimizationRule
 
 

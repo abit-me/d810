@@ -1,9 +1,9 @@
 from __future__ import annotations
 import logging
-from d810.expr.microcode_environment import MicroCodeEnvironment
-from d810.expr.microcode_interpreter import MicroCodeInterpreter
-from d810.hexrays.hexrays_formatters import format_mop_t, format_minsn_t
-from d810.hexrays.hexrays_helpers import get_blk_index
+from d810.microcode.microcode_environment import MicroCodeEnvironment
+from d810.microcode.microcode_interpreter import MicroCodeInterpreter
+from d810.format.hexrays_formatters import format_mop_t, format_minsn_t
+from d810.helper.hexrays_helpers import get_blk_index
 from ida_hexrays import *
 
 logger = logging.getLogger('D810.tracker')
@@ -109,10 +109,8 @@ class MopHistory(object):
 
     def print_info(self, detailed_info=False):
         formatted_mop_searched_list = [format_mop_t(x) for x in self.searched_mop_list]
-        tmp = ", ".join(["{0}={1}".format(formatted_mop, self.get_mop_constant_value(mop))
-                         for formatted_mop, mop in zip(formatted_mop_searched_list, self.searched_mop_list)])
-        logger.info("MopHistory: resolved={0}, path={1}, mops={2}"
-                    .format(self.is_resolved(), self.block_serial_path, tmp))
+        tmp = ", ".join(["{0}={1}".format(formatted_mop, self.get_mop_constant_value(mop)) for formatted_mop, mop in zip(formatted_mop_searched_list, self.searched_mop_list)])
+        logger.info("MopHistory: resolved={0}, path={1}, mops={2}".format(self.is_resolved(), self.block_serial_path, tmp))
         if detailed_info:
             str_mop_list = "['" + "', '".join(formatted_mop_searched_list) + "']"
             if len(self.block_path) == 0:

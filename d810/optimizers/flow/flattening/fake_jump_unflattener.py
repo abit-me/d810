@@ -2,9 +2,9 @@ import logging
 
 from d810.optimizers.flow.flattening.generic_unflattening_rule import GenericUnflatteningRule
 from ida_hexrays import *
-from d810.hexrays.mop_tracker import MopTracker
-from d810.hexrays.cfg_util import change_1way_block_successor
-from d810.hexrays.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
+from d810.mop.mop_tracker import MopTracker
+from d810.helper.cfg_util import change_1way_block_successor
+from d810.format.hexrays_formatters import format_minsn_t, dump_microcode_for_debug
 from d810.optimizers.flow.flattening.unflattener_util import get_all_possibles_values
 
 
@@ -43,8 +43,7 @@ class FakeJumpUnflattener(GenericUnflatteningRule):
             if None in pred_values:
                 unflat_logger.info("Some path are not resolved, can't fix jump")
                 return 0
-            unflat_logger.info("Pred {0} has {1} possible path ({2} different cst): {3}"
-                               .format(pred_blk.serial, len(pred_values), len(set(pred_values)), pred_values))
+            unflat_logger.info("Pred {0} has {1} possible path ({2} different cst): {3}".format(pred_blk.serial, len(pred_values), len(set(pred_values)), pred_values))
             if self.fix_successor(blk, pred_blk, pred_values):
                 nb_change += 1
         return nb_change
@@ -59,27 +58,23 @@ class FakeJumpUnflattener(GenericUnflatteningRule):
         dst_serial = None
         if jmp_ins.opcode == m_jz:
             jmp_taken = all([possible_value == compared_value for possible_value in pred_comparison_values])
-
             jmp_not_taken = all([possible_value != compared_value for possible_value in pred_comparison_values])
         elif jmp_ins.opcode == m_jnz:
             jmp_taken = all([possible_value != compared_value for possible_value in pred_comparison_values])
             jmp_not_taken = all([possible_value == compared_value for possible_value in pred_comparison_values])
         # TODO: handles other jumps cases
         if jmp_taken:
-            unflat_logger.info("It seems that '{0}' is always taken when coming from {1}: {2}"
-                               .format(format_minsn_t(jmp_ins), pred.serial, pred_comparison_values))
+            unflat_logger.info("It seems that '{0}' is always taken when coming from {1}: {2}".format(format_minsn_t(jmp_ins), pred.serial, pred_comparison_values))
             dst_serial = jmp_ins.d.b
         if jmp_not_taken:
-            unflat_logger.info("It seems that '{0}' is never taken when coming from {1}: {2}"
-                               .format(format_minsn_t(jmp_ins), pred.serial, pred_comparison_values))
+            unflat_logger.info("It seems that '{0}' is never taken when coming from {1}: {2}".format(format_minsn_t(jmp_ins), pred.serial, pred_comparison_values))
             dst_serial = fake_loop_block.serial + 1
         if dst_serial is None:
             unflat_logger.debug("Jump seems legit '{0}' from {1}: {2}"
                                 .format(format_minsn_t(jmp_ins), pred.serial, pred_comparison_values))
             return False
         dump_microcode_for_debug(self.mba, self.log_dir, "{0}_before_fake_jump".format(self.cur_maturity_pass))
-        unflat_logger.info("Making pred {0} with value {1} goto {2} ({3})"
-                           .format(pred.serial, pred_comparison_values, dst_serial, format_minsn_t(jmp_ins)))
+        unflat_logger.info("Making pred {0} with value {1} goto {2} ({3})".format(pred.serial, pred_comparison_values, dst_serial, format_minsn_t(jmp_ins)))
         dump_microcode_for_debug(self.mba, self.log_dir, "{0}_after_fake_jump".format(self.cur_maturity_pass))
         return change_1way_block_successor(pred, dst_serial)
 

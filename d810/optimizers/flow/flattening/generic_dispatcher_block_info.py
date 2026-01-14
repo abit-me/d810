@@ -1,10 +1,10 @@
 from __future__ import annotations
 import logging
-from d810.hexrays.hexrays_formatters import format_minsn_t, format_mop_list
-from d810.hexrays.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, \
+from d810.format.hexrays_formatters import format_minsn_t, format_mop_list
+from d810.helper.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, \
     extract_num_mop
-from d810.hexrays.hexrays_hooks import InstructionDefUseCollector
-from d810.hexrays.mop_tracker import remove_segment_registers
+from d810.hook.hexrays_hooks import InstructionDefUseCollector
+from d810.mop.mop_tracker import remove_segment_registers
 from ida_hexrays import *
 
 unflat_logger = logging.getLogger('D810.unflat')
@@ -46,8 +46,7 @@ class GenericDispatcherBlockInfo(object):
         ins_mop_info = InstructionDefUseCollector()
         ins.for_all_ops(ins_mop_info)
         cleaned_unresolved_ins_mops = remove_segment_registers(ins_mop_info.unresolved_ins_mops)
-        self.update_use_def_lists(cleaned_unresolved_ins_mops + ins_mop_info.memory_unresolved_ins_mops,
-                                  ins_mop_info.target_mops)
+        self.update_use_def_lists(cleaned_unresolved_ins_mops + ins_mop_info.memory_unresolved_ins_mops, ins_mop_info.target_mops)
         self.ins.append(ins)
         if ins.opcode in CONDITIONAL_JUMP_OPCODES:
             num_mop, other_mop = extract_num_mop(ins)

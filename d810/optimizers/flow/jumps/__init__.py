@@ -1,4 +1,4 @@
-from d810.module_manager import get_all_subclasses
+from d810.project.module_manager import get_all_subclasses
 from d810.optimizers.flow.jumps.jump_fixer import JumpOptimizationRule, JumpFixer
 from d810.optimizers.flow.jumps.jump_rule import *
 from d810.optimizers.flow.jumps.compare_constant_rule import *
