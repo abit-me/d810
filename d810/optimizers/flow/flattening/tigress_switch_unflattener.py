@@ -1,4 +1,3 @@
-import logging
 from d810.optimizers.flow.flattening.generic_dispatcher_unflattening_rule import GenericDispatcherUnflatteningRule
 from d810.optimizers.flow.flattening.tigress_switch_dispatcher_collector import TigressSwitchDispatcherCollector
 from ida_hexrays import *

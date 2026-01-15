@@ -1,7 +1,5 @@
 from __future__ import annotations
-import logging
-
-logger = logging.getLogger('D810')
+from d810.log.log import main_logger
 
 class OptimizerManager(object):
     def __init__(self, log_dir):
@@ -20,9 +18,11 @@ class OptimizerManager(object):
 
     def reload(self):
         self.stop()
-        logger.debug("Reloading manager...")
+        main_logger.debug("Reloading manager...")
 
-        from d810.hook.hexrays_hooks import InstructionOptimizerManager, BlockOptimizerManager, HexraysDecompilationHook
+        from d810.hook.hexrays_hooks import HexraysDecompilationHook
+        from d810.optimizers.block_optimizer_manager import BlockOptimizerManager
+        from d810.optimizers.instruction_optimizer_manager import InstructionOptimizerManager
 
         self.instruction_optimizer = InstructionOptimizerManager(self.log_dir)
         self.instruction_optimizer.configure(**self.instruction_optimizer_config)
@@ -54,15 +54,15 @@ class OptimizerManager(object):
 
     def stop(self):
         if self.instruction_optimizer is not None:
-            logger.debug("Removing InstructionOptimizer...")
+            main_logger.debug("Removing InstructionOptimizer...")
             self.instruction_optimizer.remove()
             self.instruction_optimizer = None
         if self.block_optimizer is not None:
-            logger.debug("Removing ControlFlowFixer...")
+            main_logger.debug("Removing ControlFlowFixer...")
             self.block_optimizer.remove()
             self.block_optimizer = None
         if self.hx_decompiler_hook is not None:
-            logger.debug("Removing HexraysDecompilationHook...")
+            main_logger.debug("Removing HexraysDecompilationHook...")
             self.hx_decompiler_hook.unhook()
             self.hx_decompiler_hook = None
 

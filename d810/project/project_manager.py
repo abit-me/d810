@@ -1,10 +1,8 @@
-import logging
 import os
 from typing import List, Optional
 from d810.project.configuration import D810Configuration, ProjectConfiguration
-from d810.log.log import D810_LOG_DIR_NAME
+from d810.log.log import D810_LOG_DIR_NAME, main_logger
 
-logger = logging.getLogger('D810')
 
 class ProjectManager:
     _instance: Optional['ProjectManager'] = None
@@ -38,7 +36,7 @@ class ProjectManager:
         self.register_default_projects()
         self.load_project(self.current_project_index)
 
-        logger.info("ProjectManager configured")
+        main_logger.info("ProjectManager configured")
         return self
 
     @classmethod
@@ -53,7 +51,7 @@ class ProjectManager:
             project_configuration = ProjectConfiguration(project_configuration_path, conf_dir=self.d810_config.config_dir)
             project_configuration.load()
             self.projects.append(project_configuration)
-        logger.debug("Rule configurations loaded: {0}".format(self.projects))
+        main_logger.debug("Rule configurations loaded: {0}".format(self.projects))
 
     def add_project(self, config: ProjectConfiguration):
         self.projects.append(config)
@@ -101,7 +99,7 @@ class ProjectManager:
                     ins_rule.set_log_dir(self.log_dir)
                     self.current_ins_rules.append(ins_rule)
 
-        logger.debug("Instruction rules configured")
+        main_logger.debug("Instruction rules configured")
         for blk_rule in self.known_blk_rules:
             for rule_conf in self.current_project.blk_rules:
                 if blk_rule.name == rule_conf.name:
@@ -114,8 +112,8 @@ class ProjectManager:
         # print("current_blk_rules:\n")
         # self.dump_blk_rules(self.current_blk_rules)
 
-        logger.debug("Block rules configured")
-        logger.debug("Project loaded.")
+        main_logger.debug("Block rules configured")
+        main_logger.debug("Project loaded.")
 
 
 # 模块级便捷访问

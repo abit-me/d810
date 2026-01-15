@@ -1,4 +1,3 @@
-import logging
 import idaapi
 from d810.optimizers.flow.flattening.generic_dispatcher_unflattening_rule import GenericDispatcherUnflatteningRule
 from d810.optimizers.flow.flattening.tigress_indirect_dispatcher_collector import TigressIndirectDispatcherCollector
@@ -7,7 +6,6 @@ from ida_hexrays import *
 from d810.helper.hexrays_helpers import AND_TABLE
 from d810.mop.mop_tracker import MopTracker, MopHistory
 
-unflat_logger = logging.getLogger('D810.unflat')
 FLATTENING_JUMP_OPCODES = [m_jtbl]
 
 

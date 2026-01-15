@@ -100,6 +100,7 @@ def generate_ast(opcode, leafs):
         return leafs[0]
     if len(leafs) == 2:
         return AstNode(opcode, generate_ast(opcode, leafs[0]), generate_ast(opcode, leafs[1]))
+    return None
 
 
 def get_addition_operands(ast_node):

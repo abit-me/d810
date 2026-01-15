@@ -1,13 +1,10 @@
 from __future__ import annotations
-import logging
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_list
-from d810.helper.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, \
-    extract_num_mop
-from d810.hook.hexrays_hooks import InstructionDefUseCollector
+from d810.helper.hexrays_helpers import append_mop_if_not_in_list, get_mop_index, CONDITIONAL_JUMP_OPCODES, extract_num_mop
+from d810.log.log import unflat_logger
 from d810.mop.mop_tracker import remove_segment_registers
+from d810.optimizers.instruction_def_use_collector import InstructionDefUseCollector
 from ida_hexrays import *
-
-unflat_logger = logging.getLogger('D810.unflat')
 
 class GenericDispatcherBlockInfo(object):
 

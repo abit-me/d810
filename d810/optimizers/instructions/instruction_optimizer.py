@@ -1,12 +1,11 @@
 from __future__ import annotations
-import logging
+
+from d810.log.log import optimizer_logger, main_logger
 from ida_hexrays import *
 from d810.optimizers.instructions.instruction_optimization_rule import InstructionOptimizationRule
 from d810.format.hexrays_formatters import format_minsn_t
 from d810.error.errors import D810Exception
 
-d810_logger = logging.getLogger('D810')
-optimizer_logger = logging.getLogger('D810.optimizer')
 
 class InstructionOptimizer(object):
     RULE_CLASSES = []
@@ -42,7 +41,7 @@ class InstructionOptimizer(object):
     def show_rule_usage_statistic(self):
         for rule_name, rule_nb_match in self.rules_usage_info.items():
             if rule_nb_match > 0:
-                d810_logger.info("Instruction Rule '{0}' has been used {1} times".format(rule_name, rule_nb_match))
+                main_logger.info("Instruction Rule '{0}' has been used {1} times".format(rule_name, rule_nb_match))
 
     def get_optimized_instruction(self, blk: mblock_t, ins: minsn_t):
         if blk is not None:

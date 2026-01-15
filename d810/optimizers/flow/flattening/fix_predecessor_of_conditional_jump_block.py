@@ -1,5 +1,4 @@
-import logging
-
+from d810.log.log import unflat_logger
 from d810.optimizers.flow.flattening.generic_unflattening_rule import GenericUnflatteningRule
 from ida_hexrays import *
 from d810.mop.mop_tracker import MopTracker
@@ -8,11 +7,7 @@ from d810.format.hexrays_formatters import format_minsn_t, dump_microcode_for_de
 from d810.optimizers.flow.flattening.unflattener_util import get_all_possibles_values
 from d810.helper.arithmetic_util import unsigned_to_signed
 
-
-unflat_logger = logging.getLogger('D810.unflat')
-
 JMP_OPCODE_HANDLED = [m_jnz, m_jz, m_jae, m_jb, m_ja, m_jbe, m_jge, m_jg, m_jl, m_jle]
-
 
 class FixPredecessorOfConditionalJumpBlock(GenericUnflatteningRule):
     DESCRIPTION = "Detect if a predecessor of a conditional block always takes the same path and patch it (works for O-LLVM style control flow flattening)"

@@ -1,12 +1,10 @@
 from __future__ import annotations
-import logging
+from d810.log.log import tracker_logger
 from d810.microcode.microcode_environment import MicroCodeEnvironment
 from d810.microcode.microcode_interpreter import MicroCodeInterpreter
 from d810.format.hexrays_formatters import format_mop_t, format_minsn_t
 from d810.helper.hexrays_helpers import get_blk_index
 from ida_hexrays import *
-
-logger = logging.getLogger('D810.tracker')
 
 
 class BlockInfo(object):
@@ -69,7 +67,7 @@ class MopHistory(object):
             self._is_dirty = True
             return True
         else:
-            logger.error("replace_block_in_path: should not happen")
+            tracker_logger.error("replace_block_in_path: should not happen")
             return False
 
     def insert_block_in_path(self, blk: mblock_t, where_index: int):
@@ -91,11 +89,11 @@ class MopHistory(object):
         if not self._is_dirty:
             return True
         formatted_mop_searched_list = "['" + "', '".join([format_mop_t(x) for x in self.searched_mop_list]) + "']"
-        logger.debug("Computing: {0} for path {1}".format(formatted_mop_searched_list, self.block_serial_path))
+        tracker_logger.debug("Computing: {0} for path {1}".format(formatted_mop_searched_list, self.block_serial_path))
         self._mc_current_environment = self._mc_initial_environment.get_copy()
         for blk_info in self.history:
             for blk_ins in blk_info.ins_list:
-                logger.debug("Executing: {0}.{1}".format(blk_info.blk.serial, format_minsn_t(blk_ins)))
+                tracker_logger.debug("Executing: {0}.{1}".format(blk_info.blk.serial, format_minsn_t(blk_ins)))
                 if not self._mc_interpreter.eval_instruction(blk_info.blk, blk_ins, self._mc_current_environment):
                     self._is_dirty = False
                     return False
@@ -110,11 +108,11 @@ class MopHistory(object):
     def print_info(self, detailed_info=False):
         formatted_mop_searched_list = [format_mop_t(x) for x in self.searched_mop_list]
         tmp = ", ".join(["{0}={1}".format(formatted_mop, self.get_mop_constant_value(mop)) for formatted_mop, mop in zip(formatted_mop_searched_list, self.searched_mop_list)])
-        logger.info("MopHistory: resolved={0}, path={1}, mops={2}".format(self.is_resolved(), self.block_serial_path, tmp))
+        tracker_logger.info("MopHistory: resolved={0}, path={1}, mops={2}".format(self.is_resolved(), self.block_serial_path, tmp))
         if detailed_info:
             str_mop_list = "['" + "', '".join(formatted_mop_searched_list) + "']"
             if len(self.block_path) == 0:
-                logger.info("MopHistory for {0} => nothing".format(str_mop_list))
+                tracker_logger.info("MopHistory for {0} => nothing".format(str_mop_list))
                 return
 
             end_blk = self.block_path[-1]
@@ -123,10 +121,10 @@ class MopHistory(object):
                 end_ins = self.history[-1].ins_list[-1]
 
             if end_ins:
-                logger.info("MopHistory for {0} {1}.{2}".format(str_mop_list, end_blk.serial, format_minsn_t(end_ins)))
+                tracker_logger.info("MopHistory for {0} {1}.{2}".format(str_mop_list, end_blk.serial, format_minsn_t(end_ins)))
             else:
-                logger.info("MopHistory for '{0}' {1}.tail".format(str_mop_list, end_blk.serial))
-            logger.info("  path {0}".format(self.block_serial_path))
+                tracker_logger.info("MopHistory for '{0}' {1}.tail".format(str_mop_list, end_blk.serial))
+            tracker_logger.info("  path {0}".format(self.block_serial_path))
             for blk_info in self.history:
                 for blk_ins in blk_info.ins_list:
-                    logger.info("   {0}.{1}".format(blk_info.blk.serial, format_minsn_t(blk_ins)))
+                    tracker_logger.info("   {0}.{1}".format(blk_info.blk.serial, format_minsn_t(blk_ins)))

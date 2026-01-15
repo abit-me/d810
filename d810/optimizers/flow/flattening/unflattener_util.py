@@ -1,8 +1,5 @@
 import logging
-
-
-tracker_logger = logging.getLogger('D810.tracker')
-emulator_logger = logging.getLogger('D810.emulator')
+from d810.log.log import tracker_logger, emulator_logger
 
 
 def configure_mop_tracker_log_verbosity(verbose=False):

@@ -1,9 +1,9 @@
 from __future__ import annotations
-import logging
+
+from d810.log.log import unflat_logger
 from d810.optimizers.flow.flattening.generic_dispatcher_info import GenericDispatcherInfo
 from ida_hexrays import *
 
-unflat_logger = logging.getLogger('D810.unflat')
 
 class GenericDispatcherCollector(minsn_visitor_t):
     DISPATCHER_CLASS = GenericDispatcherInfo

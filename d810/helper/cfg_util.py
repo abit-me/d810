@@ -1,13 +1,9 @@
-import logging
-
 from d810.format.block_printer import block_printer
+from d810.log.log import helper_logger
 from ida_hexrays import *
 from typing import List, Tuple
 from d810.error.errors import ControlFlowException
 from d810.helper.hexrays_helpers import CONDITIONAL_JUMP_OPCODES
-
-
-helper_logger = logging.getLogger('D810.helper')
 
 
 def log_block_info(blk: mblock_t, logger_func=helper_logger.info):

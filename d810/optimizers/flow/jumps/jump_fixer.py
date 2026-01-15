@@ -1,14 +1,10 @@
-import logging
+from d810.log.log import optimizer_logger
 from d810.optimizers.flow.jumps.jump_optimization_rule import JumpOptimizationRule
 from ida_hexrays import *
 from d810.ast.ast import mop_to_ast
 from d810.format.hexrays_formatters import format_minsn_t
 from d810.optimizers.flow.flow_optimization_rule import FlowOptimizationRule
 from d810.helper.cfg_util import make_2way_block_goto, is_conditional_jump, change_2way_block_conditional_successor
-
-
-logger = logging.getLogger("D810.branch_fixer")
-optimizer_logger = logging.getLogger('D810.optimizer')
 
 
 class JumpFixer(FlowOptimizationRule):

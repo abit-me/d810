@@ -5,9 +5,9 @@ import logging.config
 from pathlib import Path
 
 LOG_CONFIG_FILENAME = "log.ini"
-LOG_FILENAME = "d810.log"
-Z3_TEST_FILENAME = "z3_check_instructions_substitution.py"
-D810_LOG_DIR_NAME = "d810_logs"
+LOG_FILENAME        = "d810.log"
+Z3_TEST_FILENAME    = "z3_check_instructions_substitution.py"
+D810_LOG_DIR_NAME   = "d810_logs"
 
 def clear_logs(log_dir):
     shutil.rmtree(log_dir, ignore_errors=True)
@@ -21,3 +21,18 @@ def configure_loggers(log_dir):
     logging.config.fileConfig(log_conf_file.as_posix(), defaults={"default_log_filename": log_main_file.as_posix(), "z3_log_filename": z3_test_file.as_posix()})
     z3_file_logger = logging.getLogger('D810.z3_test')
     z3_file_logger.info("from z3 import BitVec, BitVecVal, UDiv, URem, LShR, UGT, UGE, ULT, ULE, prove\n\n")
+
+
+main_logger             = logging.getLogger('D810')
+helper_logger           = logging.getLogger('D810.helper')
+ui_logger               = logging.getLogger('D810.ui')
+plugin_logger           = logging.getLogger('D810.plugin')
+z3_file_logger          = logging.getLogger('D810.z3_test')
+emulator_logger         = logging.getLogger('D810.emulator')
+tracker_logger          = logging.getLogger('D810.tracker')
+unflat_logger           = logging.getLogger('D810.unflat')
+branch_fixer_logger     = logging.getLogger("D810.branch_fixer")
+optimizer_logger        = logging.getLogger('D810.optimizer')
+rules_chain_logger      = logging.getLogger('D810.rules.chain')
+pattern_matching_logger = logging.getLogger('D810.pattern_matching')
+pattern_search_logger   = logging.getLogger('D810.pattern_search')

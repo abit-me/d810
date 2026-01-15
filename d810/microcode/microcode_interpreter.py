@@ -1,16 +1,13 @@
-import logging
-
 from d810.error.errors import UnresolvedMopException, EmulationException, WritableMemoryReadException, \
     EmulationIndirectJumpException
 from d810.helper.arithmetic_util import *
+from d810.log.log import emulator_logger
 from d810.microcode.microcode_environment import MicroCodeEnvironment
 from d810.helper.cfg_util import get_block_serials_by_address
 from d810.format.hexrays_formatters import format_mop_t, format_minsn_t, mop_type_to_string, opcode_to_string
 from d810.helper.hexrays_helpers import AND_TABLE, CONTROL_FLOW_OPCODES, CONDITIONAL_JUMP_OPCODES
 from ida_hexrays import *
 from idaapi import getseg, get_qword, SEGPERM_WRITE
-
-emulator_log = logging.getLogger('D810.emulator')
 
 class MicroCodeInterpreter(object):
     def __init__(self, global_environment=None):
@@ -242,7 +239,7 @@ class MicroCodeInterpreter(object):
         helper_name = ins.l.helper
         args_list = ins.d
 
-        emulator_log.debug("Call helper for {0}".format(helper_name))
+        emulator_logger.debug("Call helper for {0}".format(helper_name))
         # and we support only __ROR4__ (we should add other Hex-Rays created helper calls)
         if helper_name == "__ROR4__":
             data_1 = self.eval(args_list.f.args[0], environment)
@@ -261,9 +258,9 @@ class MicroCodeInterpreter(object):
                 stack_mop = mop_t()
                 stack_mop.erase()
                 stack_mop._make_stkvar(environment.cur_blk.mba, load_address)
-                emulator_log.debug("Searching for stack mop {0}".format(format_mop_t(stack_mop)))
+                emulator_logger.debug("Searching for stack mop {0}".format(format_mop_t(stack_mop)))
                 stack_mop_value = environment.lookup(stack_mop)
-                emulator_log.debug("  stack mop {0} value : {1}".format(format_mop_t(stack_mop), stack_mop_value))
+                emulator_logger.debug("  stack mop {0} value : {1}".format(format_mop_t(stack_mop), stack_mop_value))
                 return stack_mop_value & res_mask
             else:
                 mem_seg = getseg(load_address)
@@ -272,18 +269,18 @@ class MicroCodeInterpreter(object):
                     raise WritableMemoryReadException("ldx {0:x} (writable -> return None)".format(load_address))
                 else:
                     memory_value = get_qword(load_address)
-                    emulator_log.debug("ldx {0:x} (non writable -> return {1:x})".format(load_address, memory_value & res_mask))
+                    emulator_logger.debug("ldx {0:x} (non writable -> return {1:x})".format(load_address, memory_value & res_mask))
                     return memory_value & res_mask
         return None
 
     def _eval_store(self, ins: minsn_t, environment: MicroCodeEnvironment) -> Union[None, int]:
         # TODO: implement
-        emulator_log.warning("Evaluation of {0} not implemented: bypassing".format(format_minsn_t(ins)))
+        emulator_logger.warning("Evaluation of {0} not implemented: bypassing".format(format_minsn_t(ins)))
         return None
 
     def _eval_call(self, ins: minsn_t, environment: MicroCodeEnvironment) -> Union[None, int]:
         # TODO: implement
-        emulator_log.warning("Evaluation of {0} not implemented: bypassing".format(format_minsn_t(ins)))
+        emulator_logger.warning("Evaluation of {0} not implemented: bypassing".format(format_minsn_t(ins)))
         return None
 
     def eval(self, mop: mop_t, environment: MicroCodeEnvironment) -> Union[None, int]:
@@ -295,21 +292,21 @@ class MicroCodeInterpreter(object):
             return self._eval_instruction(mop.d, environment)
         elif mop.t == mop_a:
             if mop.a.t == mop_v:
-                emulator_log.debug("Reading a mop_a '{0}' -> {1:x}".format(format_mop_t(mop), mop.a.g))
+                emulator_logger.debug("Reading a mop_a '{0}' -> {1:x}".format(format_mop_t(mop), mop.a.g))
                 return mop.a.g
             elif mop.a.t == mop_S:
-                emulator_log.debug("Reading a mop_a '{0}' -> {1:x}".format(format_mop_t(mop), mop.a.s.off))
+                emulator_logger.debug("Reading a mop_a '{0}' -> {1:x}".format(format_mop_t(mop), mop.a.s.off))
                 return mop.a.s.off
             raise UnresolvedMopException("Calling get_cst with unsupported mop type {0} - {1}: '{2}'".format(mop.t, mop.a.t, format_mop_t(mop)))
         elif mop.t == mop_v:
             mem_seg = getseg(mop.g)
             seg_perm = mem_seg.perm
             if (seg_perm & SEGPERM_WRITE) != 0:
-                emulator_log.debug("Reading a (writable) mop_v {0}".format(format_mop_t(mop)))
+                emulator_logger.debug("Reading a (writable) mop_v {0}".format(format_mop_t(mop)))
                 return environment.lookup(mop)
             else:
                 memory_value = get_qword(mop.g)
-                emulator_log.debug("Reading a mop_v {0:x} (non writable -> return {1:x})".format(mop.g, memory_value))
+                emulator_logger.debug("Reading a mop_v {0:x} (non writable -> return {1:x})".format(mop.g, memory_value))
                 return mop.g
         raise EmulationException("Unsupported mop type '{0}': '{1}'".format(mop_type_to_string(mop.t), format_mop_t(mop)))
 
@@ -317,17 +314,17 @@ class MicroCodeInterpreter(object):
         try:
             if environment is None:
                 environment = self.global_environment
-            emulator_log.info("Evaluating microcode instruction : '{0}'".format(format_minsn_t(ins)))
+            emulator_logger.info("Evaluating microcode instruction : '{0}'".format(format_minsn_t(ins)))
             if ins is None:
                 return False
             self._eval_instruction_and_update_environment(blk, ins, environment)
             return True
         except EmulationException as e:
-            emulator_log.warning("Can't evaluate instruction: '{0}': {1}".format(format_minsn_t(ins), e))
+            emulator_logger.warning("Can't evaluate instruction: '{0}': {1}".format(format_minsn_t(ins), e))
             if raise_exception:
                 raise e
         except Exception as e:
-            emulator_log.warning("Error during evaluation of: '{0}': {1}".format(format_minsn_t(ins), e))
+            emulator_logger.warning("Error during evaluation of: '{0}': {1}".format(format_minsn_t(ins), e))
             if raise_exception:
                 raise e
         return False
@@ -339,13 +336,13 @@ class MicroCodeInterpreter(object):
             res = self.eval(mop, environment)
             return res
         except EmulationException as e:
-            emulator_log.warning("Can't get constant mop value: '{0}': {1}".format(format_mop_t(mop), e))
+            emulator_logger.warning("Can't get constant mop value: '{0}': {1}".format(format_mop_t(mop), e))
             if raise_exception:
                 raise e
             else:
                 return None
         except Exception as e:
-            emulator_log.error("Unexpected exception while computing constant mop value: '{0}': {1}".format(format_mop_t(mop), e))
+            emulator_logger.error("Unexpected exception while computing constant mop value: '{0}': {1}".format(format_mop_t(mop), e))
             if raise_exception:
                 raise e
             else:

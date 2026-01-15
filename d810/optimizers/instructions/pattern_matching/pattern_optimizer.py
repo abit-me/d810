@@ -1,4 +1,4 @@
-import logging
+from d810.log.log import pattern_search_logger
 from d810.optimizers.instructions.pattern_matching import PatternMatchingRule
 from ida_hexrays import *
 from typing import List, Union
@@ -6,8 +6,6 @@ from d810.optimizers.instructions.instruction_optimizer import InstructionOptimi
 from d810.ast.ast import minsn_to_ast, AstNode
 from d810.format.hexrays_formatters import format_minsn_t
 
-optimizer_logger = logging.getLogger('D810.optimizer')
-pattern_search_logger = logging.getLogger('D810.pattern_search')
 
 class RulePatternInfo(object):
     def __init__(self, rule, pattern):

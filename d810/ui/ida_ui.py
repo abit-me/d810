@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
 import json
-import logging
 import idaapi
 import ida_kernwin
 from PyQt5 import QtCore, QtWidgets
-
+from d810.log.log import ui_logger
 from d810.project.configuration import D810Configuration, RuleConfiguration, ProjectConfiguration
 from d810.project.project_manager import get_project_manager
 
-logger = logging.getLogger('D810.ui')
-
-
 class PluginConfigurationFileForm_t(QtWidgets.QDialog):
     def __init__(self, parent):
-        logger.debug("Initializing PluginConfigurationFileForm_t")
+        ui_logger.debug("Initializing PluginConfigurationFileForm_t")
         super().__init__(parent)
         self.log_dir_changed = False
 
@@ -69,7 +65,7 @@ class PluginConfigurationFileForm_t(QtWidgets.QDialog):
         self.setLayout(self.config_layout)
 
     def choose_log_dir(self):
-        logger.debug("Calling save_rule_configuration")
+        ui_logger.debug("Calling save_rule_configuration")
         log_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Open Directory", os.path.expanduser("~"),
                                                                   QtWidgets.QFileDialog.ShowDirsOnly |
                                                                   QtWidgets.QFileDialog.DontResolveSymlinks)
@@ -90,7 +86,7 @@ class PluginConfigurationFileForm_t(QtWidgets.QDialog):
 
 class EditConfigurationFileForm_t(QtWidgets.QDialog):
     def __init__(self, parent):
-        logger.debug("Initializing EditConfigurationFileForm_t")
+        ui_logger.debug("Initializing EditConfigurationFileForm_t")
         super().__init__(parent)
         self.resize(1000, 500)
         self.setWindowTitle("Rule Configuration Editor")
@@ -172,7 +168,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         self.update_table_rule_selection()
 
     def update_form(self, config_description=None, activated_ins_rule_config_list=None, activated_blk_rule_config_list=None, config_path=None):
-        logger.debug("Calling update_form")
+        ui_logger.debug("Calling update_form")
         if config_description is not None:
             self.in_cfg_name.setText(config_description)
         if activated_ins_rule_config_list is not None or activated_blk_rule_config_list is not None:
@@ -181,12 +177,12 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
             self.config_path = config_path
 
     def update_table_rule_selection(self, activated_ins_rule_config_list=None, activated_blk_rule_config_list=None):
-        logger.debug("Calling update_table_rule_selection")
+        ui_logger.debug("Calling update_table_rule_selection")
         self.update_table_ins_rule_selection(activated_ins_rule_config_list)
         self.update_table_blk_rule_selection(activated_blk_rule_config_list)
 
     def _get_rule_config(self, rule_name, rule_config_list):
-        logger.debug("Calling _get_rule_config")
+        ui_logger.debug("Calling _get_rule_config")
         try:
             rule_name_list = [rule_conf.name for rule_conf in rule_config_list]
             rule_index = rule_name_list.index(rule_name)
@@ -195,7 +191,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
             return None
 
     def update_table_ins_rule_selection(self, activated_ins_rule_config_list=None):
-        logger.debug("Calling update_table_ins_rule_selection")
+        ui_logger.debug("Calling update_table_ins_rule_selection")
         if activated_ins_rule_config_list is None:
             activated_ins_rule_config_list = []
         self.table_ins_rule_selection.setRowCount(len(get_project_manager().known_ins_rules))
@@ -225,7 +221,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         self.table_ins_rule_selection.resizeColumnsToContents()
 
     def update_table_blk_rule_selection(self, activated_blk_rule_config_list=None):
-        logger.debug("Calling update_table_blk_rule_selection")
+        ui_logger.debug("Calling update_table_blk_rule_selection")
         if activated_blk_rule_config_list is None:
             activated_blk_rule_config_list = []
         self.table_blk_rule_selection.setRowCount(len(get_project_manager().known_blk_rules))
@@ -255,7 +251,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         self.table_blk_rule_selection.resizeColumnsToContents()
 
     def save_rule_configuration(self):
-        logger.debug("Calling save_rule_configuration")
+        ui_logger.debug("Calling save_rule_configuration")
         fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save file', self.config_path, "Project configuration (*.json)")
         if fname:
             self.config_path = fname
@@ -265,7 +261,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
             self.accept()
 
     def get_ins_rules(self):
-        logger.debug("Calling get_ins_rules")
+        ui_logger.debug("Calling get_ins_rules")
         activated_rule_names = []
         nb_rules = self.table_ins_rule_selection.rowCount()
         for i in range(nb_rules):
@@ -278,7 +274,7 @@ class EditConfigurationFileForm_t(QtWidgets.QDialog):
         return activated_rule_names
 
     def get_blk_rules(self):
-        logger.debug("Calling get_blk_rules")
+        ui_logger.debug("Calling get_blk_rules")
         activated_rule_names = []
         nb_rules = self.table_blk_rule_selection.rowCount()
         for i in range(nb_rules):
@@ -300,12 +296,12 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         self.d810_config = D810Configuration()
 
     def OnClose(self, form):
-        logger.debug("Calling OnClose")
+        ui_logger.debug("Calling OnClose")
         self.shown = False
         # self.parent.close()
 
     def Show(self):
-        logger.debug("Calling Show")
+        ui_logger.debug("Calling Show")
         if self.shown:
             return
         self.shown = True
@@ -318,7 +314,7 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
                      ida_kernwin.PluginForm.WOPN_TAB))
 
     def OnCreate(self, form):
-        logger.debug("Calling OnCreate")
+        ui_logger.debug("Calling OnCreate")
         self.created = True
 
         # Get parent widget
@@ -402,13 +398,13 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         self.cfg_select.currentIndexChanged.connect(self._load_config)
 
     def update_cfg_preview(self):
-        logger.debug("Calling update_cfg_preview")
+        ui_logger.debug("Calling update_cfg_preview")
         self.update_cfg_ins_preview()
         self.update_cfg_blk_preview()
 
     def update_cfg_ins_preview(self):
         # return
-        logger.debug("Calling update_cfg_ins_preview")
+        ui_logger.debug("Calling update_cfg_ins_preview")
         self.cfg_ins_preview.setRowCount(len(get_project_manager().current_ins_rules))
         self.cfg_ins_preview.setColumnCount(3)
         self.cfg_ins_preview.setHorizontalHeaderLabels(("Name", "Description", "Configuration"))
@@ -433,7 +429,7 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         self.cfg_ins_preview.resizeColumnsToContents()
 
     def update_cfg_blk_preview(self):
-        logger.debug("Calling update_cfg_blk_preview")
+        ui_logger.debug("Calling update_cfg_blk_preview")
         self.cfg_blk_preview.setRowCount(len(get_project_manager().current_blk_rules))
         self.cfg_blk_preview.setColumnCount(3)
         self.cfg_blk_preview.setHorizontalHeaderLabels(("Name", "Description", "Configuration"))
@@ -457,28 +453,28 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         self.cfg_blk_preview.resizeColumnsToContents()
 
     def update_cfg_select(self):
-        logger.debug("Calling update_cfg_select")
+        ui_logger.debug("Calling update_cfg_select")
         tmp = get_project_manager().current_project_index
         self.cfg_select.clear()
         self.cfg_select.addItems([proj.path for proj in get_project_manager().projects])
         self.cfg_select.setCurrentIndex(tmp)
 
     def _create_config(self):
-        logger.debug("Calling _create_config")
+        ui_logger.debug("Calling _create_config")
         self._internal_config_creation(None, None, None, self.d810_config.config_dir)
 
     def _duplicate_config(self):
-        logger.debug("Calling _duplicate_config")
+        ui_logger.debug("Calling _duplicate_config")
         cur_cfg = get_project_manager().current_project
         self._internal_config_creation(None, cur_cfg.ins_rules, cur_cfg.blk_rules, self.d810_config.config_dir)
 
     def _edit_config(self):
-        logger.debug("Calling _edit_config")
+        ui_logger.debug("Calling _edit_config")
         cur_cfg = get_project_manager().current_project
         self._internal_config_creation(cur_cfg.description, cur_cfg.ins_rules, cur_cfg.blk_rules, cur_cfg.path, cur_cfg)
 
     def _internal_config_creation(self, description, start_ins_rules, start_blk_rules, path, old_conf=None):
-        logger.debug("Calling _internal_config_creation")
+        ui_logger.debug("Calling _internal_config_creation")
         editdlg = EditConfigurationFileForm_t(self.parent)
         editdlg.update_form(description, start_ins_rules, start_blk_rules, path)
         if editdlg.exec_() == QtWidgets.QDialog.Accepted:
@@ -494,13 +490,13 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
 
     # callback when the "Delete" button is clicked
     def _delete_config(self):
-        logger.debug("Calling _delete_config")
+        ui_logger.debug("Calling _delete_config")
         get_project_manager().del_project(get_project_manager().current_project)
         self.update_cfg_select()
 
     # Called when the edit combo is changed
     def _load_config(self, index):
-        logger.debug("Calling _load_config")
+        ui_logger.debug("Calling _load_config")
         get_project_manager().load_project(index)
         self.cfg_description.setText(get_project_manager().current_project.description)
         self.update_cfg_preview()
@@ -513,13 +509,13 @@ class D810ConfigForm_t(ida_kernwin.PluginForm):
         return
 
     def _start_d810(self):
-        logger.debug("Calling _start_d810")
+        ui_logger.debug("Calling _start_d810")
         # self.plugin_status.clear()
         self.plugin_status.setText("<span style=\" font-size:8pt; font-weight:600; color:#00FF00;\" >Loaded</span>")
         return
 
     def _stop_d810(self):
-        logger.debug("Calling _stop_d810")
+        ui_logger.debug("Calling _stop_d810")
         # self.plugin_status.clear()
         self.plugin_status.setText("<span style=\" font-size:8pt; font-weight:600; color:#FF0000;\" >Not Loaded</span>")
         return
@@ -530,15 +526,15 @@ class D810GUI(object):
         """
         Instanciate D-810 views
         """
-        logger.debug("Initializing D810GUI")
+        ui_logger.debug("Initializing D810GUI")
         self.d810_config_form = D810ConfigForm_t()
         # XXX fix
         idaapi.set_dock_pos("D-810", "IDA View-A", idaapi.DP_TAB)
 
     def show_windows(self):
-        logger.debug("Calling show_windows")
+        ui_logger.debug("Calling show_windows")
         self.d810_config_form.Show()
 
     def term(self):
-        logger.debug("Calling term")
+        ui_logger.debug("Calling term")
         self.d810_config_form.Close(ida_kernwin.PluginForm.WCLS_SAVE)

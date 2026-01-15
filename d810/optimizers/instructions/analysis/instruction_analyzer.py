@@ -1,10 +1,8 @@
-import logging
+from d810.log.log import optimizer_logger
 from ida_hexrays import *
 from d810.format.hexrays_formatters import format_minsn_t
 from d810.optimizers.instructions.analysis import InstructionAnalysisRule
 from d810.optimizers.instructions.instruction_optimizer import InstructionOptimizer
-
-optimizer_logger = logging.getLogger('D810.optimizer')
 
 
 class InstructionAnalyzer(InstructionOptimizer):

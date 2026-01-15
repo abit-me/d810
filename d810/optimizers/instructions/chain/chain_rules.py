@@ -1,11 +1,9 @@
-import logging
 from functools import reduce
+from d810.log.log import rules_chain_logger
 from ida_hexrays import *
 from d810.optimizers.instructions.chain.chain_optimizer import ChainSimplificationRule
 from d810.helper.hexrays_helpers import equal_bnot_mop, equal_mops_ignore_size, SUB_TABLE, AND_TABLE
 from d810.format.hexrays_formatters import format_minsn_t
-
-rules_chain_logger = logging.getLogger('D810.rules.chain')
 
 
 class ChainSimplification(object):

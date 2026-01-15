@@ -1,11 +1,9 @@
 import os
-import logging
 from typing import List
 from d810.helper.hexrays_helpers import OPCODES_INFO, MATURITY_TO_STRING_DICT, STRING_TO_MATURITY_DICT, MOP_TYPE_TO_STRING_DICT
 from d810.format.mba_printer import mba_printer
+from d810.log.log import helper_logger
 from ida_hexrays import minsn_t, mop_t, mbl_array_t
-
-logger = logging.getLogger('D810.helper')
 
 
 def format_minsn_t(ins: minsn_t) -> str:
@@ -64,5 +62,5 @@ def write_mc_to_file(mba: mbl_array_t, filename: str, mba_flags: int = 0) -> boo
 
 def dump_microcode_for_debug(mba: mbl_array_t, log_dir_path: str, name: str = ""):
     mc_filename = os.path.join(log_dir_path, "{0:x}_maturity_{1}_{2}.log".format(mba.entry_ea, mba.maturity, name))
-    logger.info("Dumping microcode in file {0}...".format(mc_filename))
+    helper_logger.info("Dumping microcode in file {0}...".format(mc_filename))
     write_mc_to_file(mba, mc_filename)

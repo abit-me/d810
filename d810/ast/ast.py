@@ -1,11 +1,11 @@
 from __future__ import annotations
-import logging
+
+from d810.log.log import main_logger
 from ida_hexrays import *
 from d810.helper.arithmetic_util import unsigned_to_signed, signed_to_unsigned, get_add_cf, get_add_of, get_sub_of, get_parity_flag
 from d810.helper.hexrays_helpers import OPCODES_INFO, MBA_RELATED_OPCODES, Z3_SPECIAL_OPERANDS, MINSN_TO_AST_FORBIDDEN_OPCODES, equal_mops_ignore_size, AND_TABLE
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
 from d810.error.errors import AstEvaluationException
-logger = logging.getLogger('D810')
 
 
 def check_and_add_to_list(new_ast: Union[AstNode, AstLeaf], known_ast_list: List[Union[AstNode, AstLeaf]]):
@@ -71,7 +71,7 @@ def minsn_to_ast(instruction: minsn_t) -> Union[None, AstNode, AstLeaf]:
         tmp.dst_mop = instruction.d
         return tmp
     except RuntimeError as e:
-        logger.error("Error while transforming instruction {0}: {1}".format(format_minsn_t(instruction), e))
+        main_logger.error("Error while transforming instruction {0}: {1}".format(format_minsn_t(instruction), e))
         return None
 
 
@@ -410,7 +410,7 @@ class AstNode(dict):
                     return "{0}({1}, {2})".format(OPCODES_INFO[self.opcode]["name"], self.left, self.right)
             return "Error_AstNode"
         except RuntimeError as e:
-            logger.info("Error while calling __str__ on AstNode: {0}".format(e))
+            main_logger.info("Error while calling __str__ on AstNode: {0}".format(e))
             return "Error_AstNode"
 
 
@@ -545,7 +545,7 @@ class AstLeaf(object):
                 return format_mop_t(self.mop)
             return self.name
         except RuntimeError as e:
-            logger.info("Error while calling __str__ on AstLeaf: {0}".format(e))
+            main_logger.info("Error while calling __str__ on AstLeaf: {0}".format(e))
             return "Error_AstLeaf"
 
 
@@ -591,5 +591,5 @@ class AstConstant(AstLeaf):
                 return "0x{0:x}".format(self.expected_value)
             return self.name
         except RuntimeError as e:
-            logger.info("Error while calling __str__ on AstConstant: {0}".format(e))
+            main_logger.info("Error while calling __str__ on AstConstant: {0}".format(e))
             return "Error_AstConstant"

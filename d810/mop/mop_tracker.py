@@ -1,11 +1,11 @@
 from __future__ import annotations
-import logging
 from typing import Dict
 
+from d810.log.log import tracker_logger
 from d810.mop.mop_history import MopHistory
+from d810.optimizers.instruction_def_use_collector import InstructionDefUseCollector
 from ida_hexrays import *
 from d810.helper.cfg_util import change_1way_block_successor, change_2way_block_conditional_successor, duplicate_block
-from d810.hook.hexrays_hooks import InstructionDefUseCollector
 from d810.helper.hexrays_helpers import equal_mops_ignore_size, get_mop_index, get_blk_index
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
 
@@ -22,9 +22,6 @@ from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
 # Finally the duplicate_histories API can be used to duplicate microcode blocks so that for each microcode block,
 # the searched mops have only one possible values. For instance, this is a preliminary step used in code unflattening.
 
-
-logger = logging.getLogger('D810.tracker')
-
 def get_standard_and_memory_mop_lists(mop_in: mop_t) -> Tuple[List[mop_t], List[mop_t]]:
     if mop_in.t in [mop_r, mop_S]:
         return [mop_in], []
@@ -35,7 +32,7 @@ def get_standard_and_memory_mop_lists(mop_in: mop_t) -> Tuple[List[mop_t], List[
         mop_in.d.for_all_ops(ins_mop_info)
         return remove_segment_registers(ins_mop_info.unresolved_ins_mops), ins_mop_info.memory_unresolved_ins_mops
     else:
-        logger.warning("Calling get_standard_and_memory_mop_lists with unsupported mop type {0}: '{1}'".format(mop_in.t, format_mop_t(mop_in)))
+        tracker_logger.warning("Calling get_standard_and_memory_mop_lists with unsupported mop type {0}: '{1}'".format(mop_in.t, format_mop_t(mop_in)))
         return [], []
 
 
@@ -79,37 +76,37 @@ class MopTracker(object):
         return new_mop_tracker
 
     def search_backward(self, blk: mblock_t, ins: minsn_t, avoid_list=None, must_use_pred=None, stop_at_first_duplication=False) -> List[MopHistory]:
-        logger.debug("Searching backward (reg): {0}".format([format_mop_t(x) for x in self._unresolved_mops]))
-        logger.debug("Searching backward (mem): {0}".format([format_mop_t(x) for x in self._memory_unresolved_mops]))
-        logger.debug("Searching backward (cst): {0}".format(["{0}: {1:x}".format(format_mop_t(x[0]), x[1]) for x in self.constant_mops]))
+        tracker_logger.debug("Searching backward (reg): {0}".format([format_mop_t(x) for x in self._unresolved_mops]))
+        tracker_logger.debug("Searching backward (mem): {0}".format([format_mop_t(x) for x in self._memory_unresolved_mops]))
+        tracker_logger.debug("Searching backward (cst): {0}".format(["{0}: {1:x}".format(format_mop_t(x[0]), x[1]) for x in self.constant_mops]))
         self.mba = blk.mba
         self.avoid_list = avoid_list if avoid_list else []
         blk_with_multiple_pred = self.search_until_multiple_predecessor(blk, ins)
         if self.is_resolved():
-            logger.debug("MopTracker is resolved:  {0}".format(self.history.block_serial_path))
+            tracker_logger.debug("MopTracker is resolved:  {0}".format(self.history.block_serial_path))
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
         elif blk_with_multiple_pred is None:
-            logger.debug("MopTracker unresolved: (blk_with_multiple_pred): {0}".format(self.history.block_serial_path))
+            tracker_logger.debug("MopTracker unresolved: (blk_with_multiple_pred): {0}".format(self.history.block_serial_path))
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
         elif self.max_nb_block != -1 and len(self.history.block_serial_path) > self.max_nb_block:
-            logger.debug("MopTracker unresolved: (max_nb_block): {0}".format(self.history.block_serial_path))
+            tracker_logger.debug("MopTracker unresolved: (max_nb_block): {0}".format(self.history.block_serial_path))
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
         elif self.max_path != -1 and cur_mop_tracker_nb_path > self.max_path:
-            logger.debug("MopTracker unresolved: (max_path: {0}".format(cur_mop_tracker_nb_path))
+            tracker_logger.debug("MopTracker unresolved: (max_path: {0}".format(cur_mop_tracker_nb_path))
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
         elif self.call_detected:
-            logger.debug("MopTracker unresolved: (call): {0}".format(self.history.block_serial_path))
+            tracker_logger.debug("MopTracker unresolved: (call): {0}".format(self.history.block_serial_path))
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
 
         if stop_at_first_duplication:
             self.history.unresolved_mop_list = [x for x in self._unresolved_mops]
             return [self.history]
-        logger.debug("MopTracker creating child because multiple pred: {0}".format(self.history.block_serial_path))
+        tracker_logger.debug("MopTracker creating child because multiple pred: {0}".format(self.history.block_serial_path))
         possible_histories = []
         if must_use_pred is not None and must_use_pred.serial in blk_with_multiple_pred.predset:
             new_tracker = self.get_copy()
@@ -164,7 +161,7 @@ class MopTracker(object):
         ml = mlist_t()
         for unresolved_mop in self._unresolved_mops:
             if unresolved_mop.t not in [mop_r, mop_S]:
-                logger.warning("_build_ml_list: Not supported mop type '{0}'".format(unresolved_mop.t))
+                tracker_logger.warning("_build_ml_list: Not supported mop type '{0}'".format(unresolved_mop.t))
                 return None
             blk.append_use_list(ml, unresolved_mop, MUST_ACCESS)
         return ml
@@ -174,7 +171,7 @@ class MopTracker(object):
             return None
         ml = self._build_ml_list(blk)
         if not ml:
-            logger.warning("blk_find_def_backward: _build_ml_list failed")
+            tracker_logger.warning("blk_find_def_backward: _build_ml_list failed")
             return None
         ins_def = self._blk_find_ins_def_backward(blk, ins_start, ml)
         if ins_def:
@@ -185,7 +182,7 @@ class MopTracker(object):
         return ins_def
 
     def update_history(self, blk: mblock_t, ins_def: minsn_t) -> bool:
-        logger.debug("Updating history with {0}.{1}".format(blk.serial, format_minsn_t(ins_def)))
+        tracker_logger.debug("Updating history with {0}.{1}".format(blk.serial, format_minsn_t(ins_def)))
         self.history.insert_ins_in_block(blk, ins_def, before=True)
         if ins_def.opcode == m_call:
             self.call_detected = True
@@ -196,24 +193,24 @@ class MopTracker(object):
         for target_mop in ins_mop_info.target_mops:
             resolved_mop_index = get_mop_index(target_mop, self._unresolved_mops)
             if resolved_mop_index != -1:
-                logger.debug("Removing {0} from unresolved mop".format(format_mop_t(target_mop)))
+                tracker_logger.debug("Removing {0} from unresolved mop".format(format_mop_t(target_mop)))
                 self._unresolved_mops.pop(resolved_mop_index)
         cleaned_unresolved_ins_mops = remove_segment_registers(ins_mop_info.unresolved_ins_mops)
         for ins_def_mop in cleaned_unresolved_ins_mops:
             ins_def_mop_index = get_mop_index(ins_def_mop, self._unresolved_mops)
             if ins_def_mop_index == -1:
-                logger.debug("Adding {0} in unresolved mop".format(format_mop_t(ins_def_mop)))
+                tracker_logger.debug("Adding {0} in unresolved mop".format(format_mop_t(ins_def_mop)))
                 self._unresolved_mops.append(ins_def_mop)
 
         for target_mop in ins_mop_info.target_mops:
             resolved_mop_index = get_mop_index(target_mop, self._memory_unresolved_mops)
             if resolved_mop_index != -1:
-                logger.debug("Removing {0} from memory unresolved mop".format(format_mop_t(target_mop)))
+                tracker_logger.debug("Removing {0} from memory unresolved mop".format(format_mop_t(target_mop)))
                 self._memory_unresolved_mops.pop(resolved_mop_index)
         for ins_def_mem_mop in ins_mop_info.memory_unresolved_ins_mops:
             ins_def_mop_index = get_mop_index(ins_def_mem_mop, self._memory_unresolved_mops)
             if ins_def_mop_index == -1:
-                logger.debug("Adding {0} in memory unresolved mop".format(format_mop_t(ins_def_mem_mop)))
+                tracker_logger.debug("Adding {0} in memory unresolved mop".format(format_mop_t(ins_def_mem_mop)))
                 self._memory_unresolved_mops.append(ins_def_mem_mop)
         return True
 
@@ -258,17 +255,17 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
     block_to_duplicate, pred_dict = get_block_with_multiple_predecessors(var_histories)
     if block_to_duplicate is None:
         return nb_duplication, nb_change
-    logger.debug("Block to duplicate found: {0} with {1} successors".format(block_to_duplicate.serial, block_to_duplicate.nsucc()))
+    tracker_logger.debug("Block to duplicate found: {0} with {1} successors".format(block_to_duplicate.serial, block_to_duplicate.nsucc()))
     i = 0
     for pred_serial, pred_history_group in pred_dict.items():
         # We do not duplicate first group
         if i >= 1:
-            logger.debug("  Before {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
+            tracker_logger.debug("  Before {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
             pred_block = mba.get_mblock(pred_serial)
             duplicated_blk_jmp, duplicated_blk_default = duplicate_block(block_to_duplicate)
             nb_duplication += 1 if duplicated_blk_jmp is not None else 0
             nb_duplication += 1 if duplicated_blk_default is not None else 0
-            logger.debug("  Making {0} goto {1}".format(pred_block.serial, duplicated_blk_jmp.serial))
+            tracker_logger.debug("  Making {0} goto {1}".format(pred_block.serial, duplicated_blk_jmp.serial))
             if (pred_block.tail is None) or (not is_mcode_jcond(pred_block.tail.opcode)):
                 change_1way_block_successor(pred_block, duplicated_blk_jmp.serial)
                 nb_change += 1
@@ -277,12 +274,12 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
                     change_2way_block_conditional_successor(pred_block, duplicated_blk_jmp.serial)
                     nb_change += 1
                 else:
-                    logger.warning(" not sure this is suppose to happen")
+                    tracker_logger.warning(" not sure this is suppose to happen")
                     change_1way_block_successor(pred_block.mba.get_mblock(pred_block.serial + 1), duplicated_blk_jmp.serial)
                     nb_change += 1
 
             block_to_duplicate_default_successor = mba.get_mblock(block_to_duplicate.serial + 1)
-            logger.debug("  Now, we fix var histories...")
+            tracker_logger.debug("  Now, we fix var histories...")
             for var_history in pred_history_group:
                 var_history.replace_block_in_path(block_to_duplicate, duplicated_blk_jmp)
                 if block_to_duplicate.tail is not None and is_mcode_jcond(block_to_duplicate.tail.opcode):
@@ -292,9 +289,9 @@ def try_to_duplicate_one_block(var_histories: List[MopHistory]) -> Tuple[int, in
                         if original_jump_block_successor.serial == block_to_duplicate_default_successor.serial:
                             var_history.insert_block_in_path(duplicated_blk_default, index_jump_block + 1)
         i += 1
-        logger.debug("  After {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
+        tracker_logger.debug("  After {0}: {1}".format(pred_serial, [var_history.block_serial_path for var_history in pred_history_group]))
     for i, var_history in enumerate(var_histories):
-        logger.debug(" internal_pass_end.{0}: {1}".format(i, var_history.block_serial_path))
+        tracker_logger.debug(" internal_pass_end.{0}: {1}".format(i, var_history.block_serial_path))
     return nb_duplication, nb_change
 
 
@@ -302,11 +299,11 @@ def duplicate_histories(var_histories: List[MopHistory], max_nb_pass: int = 10) 
     cur_pass = 0
     total_nb_duplication = 0
     total_nb_change = 0
-    logger.info("Trying to fix new var_history...")
+    tracker_logger.info("Trying to fix new var_history...")
     for i, var_history in enumerate(var_histories):
-        logger.info(" start.{0}: {1}".format(i, var_history.block_serial_path))
+        tracker_logger.info(" start.{0}: {1}".format(i, var_history.block_serial_path))
     while cur_pass < max_nb_pass:
-        logger.debug("Current path {0}".format(cur_pass))
+        tracker_logger.debug("Current path {0}".format(cur_pass))
         nb_duplication, nb_change = try_to_duplicate_one_block(var_histories)
         if nb_change == 0 and nb_duplication == 0:
             break
@@ -314,7 +311,7 @@ def duplicate_histories(var_histories: List[MopHistory], max_nb_pass: int = 10) 
         total_nb_change += nb_change
         cur_pass += 1
     for i, var_history in enumerate(var_histories):
-        logger.info(" end.{0}: {1}".format(i, var_history.block_serial_path))
+        tracker_logger.info(" end.{0}: {1}".format(i, var_history.block_serial_path))
     return total_nb_duplication, total_nb_change
 
 

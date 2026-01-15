@@ -1,14 +1,12 @@
 from __future__ import annotations
-import logging
 from typing import Dict
 
+from d810.log.log import emulator_logger
 from d810.mop.mop_mapping import MopMapping
 from ida_hexrays import *
 from d810.helper.hexrays_helpers import equal_mops_ignore_size
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_t, mop_type_to_string
 from d810.error.errors import EmulationException
-
-emulator_log = logging.getLogger('D810.emulator')
 
 
 class MicroCodeEnvironment(object):
@@ -52,7 +50,7 @@ class MicroCodeEnvironment(object):
             if self.next_ins is None:
                 self.next_blk = self.cur_blk.mba.get_mblock(self.cur_blk.serial + 1)
                 self.next_ins = self.next_blk.head
-        emulator_log.debug("Setting next block {0} and next ins {1}".format(self.next_blk.serial, format_minsn_t(self.next_ins)))
+        emulator_logger.debug("Setting next block {0} and next ins {1}".format(self.next_blk.serial, format_minsn_t(self.next_ins)))
 
     def set_next_flow(self, next_blk: mblock_t, next_ins: minsn_t):
         self.next_blk = next_blk

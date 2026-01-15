@@ -1,9 +1,9 @@
 from __future__ import annotations
-import logging
 from d810.error.errors import NotDuplicableFatherException, NotResolvableFatherException
 from d810.helper.cfg_util import ensure_child_has_an_unconditional_father, create_block, change_1way_block_successor, ensure_last_block_is_goto, mba_deep_cleaning
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_list, dump_microcode_for_debug, format_mop_t
 from d810.helper.hexrays_helpers import CONTROL_FLOW_OPCODES
+from d810.log.log import unflat_logger
 from d810.mop.mop_tracker import MopHistory, MopTracker, duplicate_histories
 from d810.optimizers.flow.flattening.generic_dispatcher_block_info import GenericDispatcherBlockInfo
 from d810.optimizers.flow.flattening.generic_dispatcher_collector import GenericDispatcherCollector
@@ -12,7 +12,7 @@ from d810.optimizers.flow.flattening.generic_unflattening_rule import GenericUnf
 from d810.optimizers.flow.flattening.unflattener_util import get_all_possibles_values, check_if_all_values_are_found
 from ida_hexrays import *
 
-unflat_logger = logging.getLogger('D810.unflat')
+
 
 class GenericDispatcherUnflatteningRule(GenericUnflatteningRule):
     DISPATCHER_COLLECTOR_CLASS = GenericDispatcherCollector

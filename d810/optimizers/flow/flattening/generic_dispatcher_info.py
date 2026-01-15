@@ -1,14 +1,12 @@
 from __future__ import annotations
-import logging
-
 from d810.error.errors import NotResolvableFatherException
+from d810.log.log import unflat_logger
 from d810.microcode.microcode_environment import MicroCodeEnvironment
 from d810.microcode.microcode_interpreter import MicroCodeInterpreter
 from d810.format.hexrays_formatters import format_minsn_t, format_mop_t
 from d810.mop.mop_tracker import MopHistory
 from ida_hexrays import *
 
-unflat_logger = logging.getLogger('D810.unflat')
 
 class GenericDispatcherInfo(object):
     def __init__(self, mba: mbl_array_t):

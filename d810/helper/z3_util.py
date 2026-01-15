@@ -1,11 +1,10 @@
-import logging
+from d810.log.log import plugin_logger, z3_file_logger
 from ida_hexrays import *
 from d810.helper.hexrays_helpers import get_mop_index
 from d810.format.hexrays_formatters import format_minsn_t, opcode_to_string
 from d810.ast.ast import mop_to_ast, minsn_to_ast, AstLeaf, AstNode
 from d810.error.errors import D810Z3Exception
-logger = logging.getLogger('D810.plugin')
-z3_file_logger = logging.getLogger('D810.z3_test')
+
 
 try:
     import z3
@@ -17,10 +16,10 @@ try:
     try:
         x = sys.stdout.encoding
     except AttributeError:
-        logger.debug("Couldn't find sys.stdout.encoding, setting it to utf-8")
+        plugin_logger.debug("Couldn't find sys.stdout.encoding, setting it to utf-8")
         sys.stdout.encoding = "utf-8"
 except ImportError:
-    logger.info("Z3 features disabled. Install Z3 to enable them")
+    plugin_logger.info("Z3 features disabled. Install Z3 to enable them")
     Z3_INSTALLED = False
 
 

@@ -1,12 +1,5 @@
-import logging
 import os
-
-from typing import TYPE_CHECKING
 from d810.log.log import configure_loggers, clear_logs, D810_LOG_DIR_NAME
-
-if TYPE_CHECKING:
-    pass
-
 from d810.project.configuration import D810Configuration
 from d810.project.module_manager import reload_all_modules
 from d810.optimizer_manager import OptimizerManager
@@ -15,7 +8,6 @@ from d810.project.project_manager import get_project_manager
 # Note that imports are performed directly in the functions so that they are reloaded each time the plugin is restarted
 # This allow to load change code/drop new rules without having to reboot IDA
 d810_state = None
-logger = logging.getLogger('D810')
 
 class StateManager(object):
     def __init__(self):
