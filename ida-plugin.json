@@ -1,0 +1,14 @@
+{
+    "IDAMetadataDescriptorVersion": 1,
+    "plugin": {
+        "name": "d810",
+        "entryPoint": "D810.py",
+        "categories": [
+            "decompilation",
+            "debugging-and-tracing"
+        ],
+        "idaVersions": ">=9.0",
+        "description": "D810 optimized IDA Pro plugin that serves as a framework and deobfuscation harness used to deobfuscate code at decompilation time by modifying IDA Pro microcode.",
+        "version": "0.0.1"
+    }
+}

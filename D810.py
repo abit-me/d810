@@ -2,6 +2,11 @@ import idaapi
 import ida_hexrays
 import ida_kernwin
 
+import os, sys
+plugin_dir = os.path.dirname(__file__)
+# 假设 d810 包就在 D810.py 同级目录的 d810 目录下
+sys.path.insert(0, plugin_dir)
+sys.path.insert(0, os.path.join(plugin_dir, 'd810'))
 
 from d810.state_manager import StateManager
 D810_VERSION = "0.1"
@@ -17,17 +22,20 @@ class D810Plugin(idaapi.plugin_t):
 
     def __init__(self):
         super(D810Plugin, self).__init__()
+        print("D-810 __init__")
         self.state_manager = None
         self.gui = None
         self.initialized = False
 
     def start_plugin(self):
         from d810.ui.ida_ui import D810GUI
+        print("D-810 start")
         self.state_manager.start()
         self.gui = D810GUI()
         self.gui.show_windows()
 
     def stop_plugin(self):
+        print("D-810 stop")
         self.state_manager.stop()
         if self.gui:
             self.gui.term()
@@ -35,6 +43,7 @@ class D810Plugin(idaapi.plugin_t):
 
     # IDA API methods: init, run, term
     def init(self):
+        print("D-810 init")
         if not ida_hexrays.init_hexrays_plugin():
             print("D-810 need Hex-Rays decompiler. Skipping")
             return idaapi.PLUGIN_SKIP
@@ -53,11 +62,12 @@ class D810Plugin(idaapi.plugin_t):
 
 
     def run(self, args):
+        print("D-810 run")
         self.start_plugin()
 
 
     def term(self):
-        print("Terminating D-810...")
+        print("D-810 term")
         if self.state_manager is not None:
             self.state_manager.stop()
 
